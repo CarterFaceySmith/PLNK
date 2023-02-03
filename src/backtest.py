@@ -2,7 +2,18 @@ import backtrader as bt
 import matplotlib as plt
 from alpaca_trade_api.rest import TimeFrame
 
+""" 
+Baseline functionality:
+- The backtest function intakes a strategy (instance of bt.Strategy)
+- Strategies can be defined and added/deleted from a dict of bt.Strategy classes
+- Each strategy is defined as a class and takes in the default bt.Strategy as its only argument
+- 
+"""
+
+# Settings
 plt.rcParams['figure.dpi'] = 150
+crypto_symbols = {"BTCUSD", "ETHUSD", "LTCUSD"}
+strategies = {}
 
 def backtest(strategy, rest_api, symbols, start, end, timeframe=TimeFrame, cash=10000):
     """params:
@@ -15,29 +26,45 @@ def backtest(strategy, rest_api, symbols, start, end, timeframe=TimeFrame, cash=
         cash: the starting cash of backtest
     """
 
-    # initialize backtrader broker
+    # Initialise backtrader
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
 
-    # add strategy
+    # Add strategy
     cerebro.addstrategy(strategy)
 
-    # add analytics
+    # Add analytics
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
-    # historical data request
+
+    # Request historical ticker data
     if type(symbols) == str:
         symbol = symbols
-        alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
-        data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
-        cerebro.adddata(data)
-    elif type(symbols) == list or type(symbols) == set:
-        for symbol in symbols:
+        if symbol in crypto_symbols:
             alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
             cerebro.adddata(data)
+        elif symbol not in crypto_symbols:
+            alpaca_data = rest_api.get_latest_bars(symbol, timeframe, start, end).df
+            data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
+            cerebro.adddata(data)
+        else:
+            SyntaxError('Invalid symbol')
+        
+    elif type(symbols) == list or type(symbols) == set:
+        for symbol in symbols:
+            if symbol in crypto_symbols:
+                alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
+                data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
+                cerebro.adddata(data)
+            elif symbol not in crypto_symbols:
+                alpaca_data = rest_api.get_latest_bars(symbol, timeframe, start, end).df
+                data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
+                cerebro.adddata(data)
+            else:
+                SyntaxError('Invalid symbol')
 
 
-    # run
+    # Run backtest
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value}')
     results = cerebro.run()
@@ -48,7 +75,19 @@ def backtest(strategy, rest_api, symbols, start, end, timeframe=TimeFrame, cash=
     print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
     cerebro.plot(iplot= False)
 
+# Print all stored strategies to console
+def print_strategies():
+    for strat in strategies:
+        print("Strategy {}:\t{}\n".format(strategies.index(strat),strat))
 
+# Search for and delete strategy from storage
+def delete_strategy(strategy_name):
+    if strategy_name in strategies:
+        print("Match found.\n")
+        strategies.pop(strategy_name)
+        print("Strategy deleted successfully\n")
+
+# Strategies
 class CryptoRebalance(bt.Strategy):
 
    def __init__(self):
@@ -68,6 +107,8 @@ class CryptoRebalance(bt.Strategy):
            symbol = d._name
            self.order_target_percent(d, target=self.weights[symbol])
 
-# How to use  
-# symbols = ["BTCUSD", "ETHUSD", "LTCUSD"]
-# backtest(CryptoRebalance, symbols, '2020-01-01', '2022-11-01', TimeFrame.Day, 100000)
+"""
+How to call:  
+    symbols = ["BTCUSD", "ETHUSD", "LTCUSD"]
+    backtest(CryptoRebalance, restAPI, symbols, '2020-01-01', '2022-11-01', TimeFrame.Day, 100000)
+"""
