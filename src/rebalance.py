@@ -80,4 +80,3 @@ while(True):
         print(f"Order submitted: {market_order}")
     
     time.sleep(get_pause())
-    print("*"*20)
