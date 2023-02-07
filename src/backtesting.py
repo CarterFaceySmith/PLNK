@@ -6,11 +6,21 @@ import config
 rest_api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, 'https://paper-api.alpaca.markets')
 crypto = ['BTCUSD', 'ETHUSD']
 
-def run_backtest(strategy, symbols, start, end, timeframe=TimeFrame.Day, cash=10000):
+tickers = input("Enter the stock tickers separated by commas: ").split(',')
+allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+target_allocations = [float(x) for x in allocation_input]
+
+# Ensure that the sum of target allocations is 1
+if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+    raise ValueError("The sum of your allocations must be between 0 and 1")
+
+portfolio = dict(zip(tickers, target_allocations))
+
+def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=10000):
     # initialize backtrader broker
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
-    cerebro.addstrategy(strategy) #Can inject parameters in this call
+    cerebro.addstrategy(strategy, strat_params)
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
 
     if type(symbols) == str:
@@ -39,15 +49,20 @@ def run_backtest(strategy, symbols, start, end, timeframe=TimeFrame.Day, cash=10
 
     strat = results[0]
     print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
-    cerebro.plot(iplot= False)
+    # cerebro.plot(iplot= False)
 
-
-# Strategies
 class Rebalance(bt.Strategy):
+   
+   params = (
+       ('weights',{})
+   )
 
-   def __init__(self):
+   def __init__(self, params=None):
+       if params != None:
+            for name, val in params.items():
+                setattr(self.params, name, val) # Could change to directly write as per below line 65?
        self.year_last_rebalanced = -1 
-       self.weights = { "BTCUSD" : 0.15, "MSFT" : 0.2, "ETHUSD" : 0.05, "VOO" : 0.5, "VOOG" : 0.25}
+    #    self.weights = { "BTCUSD" : 0.15, "MSFT" : 0.2, "ETHUSD" : 0.05, "VOO" : 0.4, "VOOG" : 0.2}
 
    def next(self):
        # if we’ve already rebalanced this year
@@ -58,9 +73,7 @@ class Rebalance(bt.Strategy):
        # enumerate through each security
        for i,d in enumerate(self.datas):
            # rebalance portfolio with desired target percents
-           symbol = d._name
-           self.order_target_percent(d, target=self.weights[symbol])
+            symbol = d._name
+            self.order_target_percent(d, target=self.weights[symbol])
 
-portfolio = ["BTCUSD", "MSFT", "ETHUSD", "VOO", "VOOG"]
-# TODO: Replance the symbols with a direct call from the strategy
-run_backtest(Rebalance, portfolio, '2020-01-01', '2023-02-01', TimeFrame.Day, 100000)
+backtest(Rebalance, portfolio, tickers, '2022-01-01', '2023-02-01', TimeFrame.Day, 100000)
