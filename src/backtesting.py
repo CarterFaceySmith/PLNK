@@ -42,22 +42,20 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
     final_portfolio_value = cerebro.broker.getvalue()
     print(f'Final Portfolio Value: {final_portfolio_value} ---> Return: {(final_portfolio_value/initial_portfolio_value - 1)*100}%')
 
-    strat = results[0]
-    print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
+    # strat = results[0]
+    # print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
     # cerebro.plot()
 
 class Rebalance(bt.Strategy):
-   
    params = (
        ('weights',{}),
    )
 
    def __init__(self, params=None):
-    #    if params != None:
-    #         for name, val in params.items():
-    #             setattr(self.params, name, val) # Could change to directly write as per below line 65?
+       if params != None:
+            for name, val in params.items():
+                setattr(self.params, name, val)
        self.year_last_rebalanced = -1 
-       self.weights = params
 
    def next(self):
        # if we’ve already rebalanced this year
