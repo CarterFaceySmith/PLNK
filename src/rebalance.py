@@ -12,7 +12,9 @@ trading_client, rest_api, crypto_client, stock_client = config.return_clients()
     # return pause
 
 '''
-The rebalance function intakes a dictionary of Alpaca API tickers and corresponding percentage allocations (0 < sum(x) < 1) and an integer to set the decimal precision of the orders.
+The rebalance function intakes:
+    Parameter 1: A dictionary of Alpaca API tickers and corresponding percentage allocations (0 < sum(x) < 1)
+    Parameter 2: An integer to set the decimal precision of the orders
 '''
 def perform_rebalance(desired_allocations, precision=3):
     rest_api.close_all_positions()
