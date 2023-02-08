@@ -1,10 +1,8 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
-import alpaca_trade_api as tradeapi
 import config
 
-rest_api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, 'https://paper-api.alpaca.markets')
-crypto = ['BTCUSD', 'ETHUSD']
+rest_api = config.rest_api
 
 tickers = input("Enter the stock tickers separated by commas: ").split(',')
 allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
@@ -22,7 +20,7 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
 
     if type(symbols) == str:
-        if(symbols in crypto):
+        if(symbols in config.crypto):
             alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
         else:
             alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
@@ -31,8 +29,8 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
     elif type(symbols) == list or type(symbols) == set:
         for symbol in symbols:
-            if(symbol in crypto):
-                alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
+            if(symbol in config.crypto):
+                alpaca_data = rest_api.crypto_bars(symbol, timeframe, start, end).df
             else:
                 alpaca_data = rest_api.get_bars(symbol, timeframe, start, end).df
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)

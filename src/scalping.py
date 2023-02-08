@@ -1,11 +1,6 @@
-import alpaca_trade_api as tradeapi
 from alpaca.data.timeframe import TimeFrame
 import backtrader as bt
 import config
-
-# Alpaca API key
-API_KEY = config.API_KEY
-API_SECRET = config.SECRET_KEY
 
 # Define the strategy
 class ScalpingStrategy(bt.Strategy):
@@ -32,8 +27,8 @@ class ScalpingStrategy(bt.Strategy):
 if __name__ == '__main__':
     cerebro = bt.Cerebro()
     cerebro.addstrategy(ScalpingStrategy)
-
-    api = tradeapi.REST(API_KEY, API_SECRET, 'https://paper-api.alpaca.markets')
+    
+    api = config.rest_api
 
     data = api.get_crypto_bars("ETHUSD", TimeFrame.Day, start='2020-01-01', end='2020-01-01')
     data = bt.feeds.PandasData(dataname=data)

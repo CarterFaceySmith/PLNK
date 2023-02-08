@@ -1,82 +1,56 @@
-from datetime import datetime, timedelta
-import math
-import time
-from alpaca_trade_api.rest import REST, TimeFrame
-from alpaca_trade_api.stream import Stream
-from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient
-import src.config as config
+import config
 
-trading_client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=True)
+trading_client, rest_api, crypto_client, stock_client = config.return_clients()
 
-rest_api = REST(config.API_KEY, config.SECRET_KEY, 'https://paper-api.alpaca.markets')
+# def get_pause():
+    # now = datetime.now()
+    # next_day = now.replace(second=0, microsecond=0) + timedelta(days=1)
+    # pause = math.ceil((next_day - now).seconds)
+    # print(f"Sleep for {pause}")
+    # return pause
 
-# no keys required.
-crypto_client = CryptoHistoricalDataClient()
-
-# keys required
-stock_client = StockHistoricalDataClient(config.API_KEY, config.SECRET_KEY)
-
-crypto_symbols = {"BTCUSD", "ETHUSD"}
-
-percent_allocations = { "BTCUSD" : 0.0825 , "ETHUSD" : 0.06, "VOO" : 0.33, "VOOG" : 0.22, "MSFT" : 0.025, "ASTS" : 0.025}
-
-max_qty_precision = {"BTCUSD" : 4 , "ETHUSD" : 3, "VOO" : 3, "VOOG" : 3, "APPL" : 3, "MSFT" : 3, "ASTS" : 3, "GOOG" : 3 }
-
-def get_pause():
-    now = datetime.now()
-    next_day = now.replace(second=0, microsecond=0) + timedelta(days=1)
-    pause = math.ceil((next_day - now).seconds)
-    print(f"Sleep for {pause}")
-    return pause
-
-while(True):
-    
-    # liquidate all existing positions and orders before rebalancing
+'''
+The rebalance function intakes a dictionary of Alpaca API tickers and corresponding percentage allocations (0 < sum(x) < 1) and an integer to set the decimal precision of the orders.
+'''
+def perform_rebalance(desired_allocations, precision=3):
     rest_api.close_all_positions()
     rest_api.cancel_all_orders()
 
-    # get available cash
     available_cash = float(rest_api.get_account().cash)
 
-    # how many dollars we want to allocate to each symbol
-    dollar_value_allocations = {symbol: percent * available_cash for symbol, percent in percent_allocations.items()}
+    dollar_value_allocations = {symbol: percent * available_cash for symbol, percent in desired_allocations.items()}
 
-    # Rebalance portfolio
+    # Rebalance
     for symbol, dollars_alloc in dollar_value_allocations.items():
-        if symbol in crypto_symbols:
+        if symbol in config.crypto:
             time_in_force = TimeInForce.GTC
         else:
             time_in_force = TimeInForce.DAY
 
-        # market price of current ETF
-        if symbol in crypto_symbols:
-            market_price = rest_api.get_latest_crypto_bar(symbol, exchange="FTXU").close
+        if symbol in config.crypto:
+            market_price = rest_api.get_latest_crypto_bar(symbol, exchange='FTXU').c
         else:
             market_price = rest_api.get_latest_bar(symbol).c
 
-        # how many shares we want, rounded to the most allowed decimal places
-        target_holdings = round(dollars_alloc / market_price, max_qty_precision[symbol])
-
-        # how many shares we have to buy to match target
-        order_quantity = target_holdings
+        target_holdings = round(dollars_alloc / market_price, precision)
 
         market_order_data = MarketOrderRequest(
             symbol=symbol,
-            qty=order_quantity,
+            qty=target_holdings,
             side=OrderSide.BUY,
             time_in_force=time_in_force
         )
 
-        print(f"Submitting market order for {order_quantity} units of {symbol}")
-
-        # Market order
+        print(f"Submitting market order for {target_holdings} units of {symbol}")
         market_order = trading_client.submit_order(
                         order_data=market_order_data
-                       )
+                        )
+        print(f"Order submitted: {market_order.qty} units of {market_order.symbol}\n")
 
-        print(f"Order submitted: {market_order}")
-    
-    time.sleep(get_pause())
+    print("All orders submitted.")
+
+# percent_allocations = { "BTCUSD" : 0.2 , "ETHUSD" : 0.2, "VOO" : 0.2, "VOOG" : 0.20, "MSFT" : 0.05}
+# perform_rebalance(percent_allocations, max_qty_precision)
+# time.sleep(get_pause())
