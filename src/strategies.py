@@ -56,6 +56,7 @@ class ETHScalping(bt.Strategy):
                 self.sell(price=self.data.close[0])
 
 strategy_dict = {'Rebalance': Rebalance, 'Ethereum Scalping': ETHScalping}
+strategy_list = list(strategy_dict.keys())
 
 def list_strats():
     i = 1
@@ -63,3 +64,9 @@ def list_strats():
         print(f'{i}: {name}')
         i += 1
     print("\n")
+
+def select_strat():
+    list_strats()
+    selection = input("Select strategy: ")
+    selection_name = strategy_list[int(selection)-1]
+    return strategy_dict[selection_name]
