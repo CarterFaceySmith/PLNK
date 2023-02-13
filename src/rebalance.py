@@ -53,6 +53,6 @@ def perform_rebalance(desired_allocations, precision=3):
 
     print("All orders submitted.")
 
-# percent_allocations = { "BTCUSD" : 0.2 , "ETHUSD" : 0.2, "VOO" : 0.2, "VOOG" : 0.20, "MSFT" : 0.05}
-# perform_rebalance(percent_allocations, max_qty_precision)
+# percent_allocations = { "BTCUSD" : 0.1 , "ETHUSD" : 0.05, "VOO" : 0.25, "VOOG" : 0.40, "MSFT" : 0.1}
+# perform_rebalance(percent_allocations)
 # time.sleep(get_pause())
