@@ -4,20 +4,20 @@ import config
 
 rest_api = config.rest_api
 
-tickers = input("Enter the stock tickers separated by commas: ").split(',')
-allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-target_allocations = [float(x) for x in allocation_input]
+# tickers = input("Enter the stock tickers separated by commas: ").split(',')
+# allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+# target_allocations = [float(x) for x in allocation_input]
 
-if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-    raise ValueError("The sum of your allocations must be between 0 and 1")
+# if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+#     raise ValueError("The sum of your allocations must be between 0 and 1")
 
-weights = dict(zip(tickers, target_allocations))
+# weights = dict(zip(tickers, target_allocations))
 
-user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+# user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+# user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
 
-if user_end < user_start:
-    raise ValueError("End date must be after the start date")
+# if user_end < user_start:
+#     raise ValueError("End date must be after the start date")
 
 '''
     Backtest function intakes:
@@ -86,6 +86,7 @@ class Rebalance(bt.Strategy):
     params = (
         ('weights',{}),
         ('frequency',''),
+        ('maperiod', 15)
     )
 
     def __init__(self, params=None):
@@ -113,10 +114,10 @@ class Rebalance(bt.Strategy):
                 symbol = d._name
                 self.order_target_percent(d, target=self.params.weights[symbol])
 
-# weights = {"MSFT":0.2,"BTCUSD":0.2,"GOOG":0.2,"ETHUSD":0.3}
-# tickers = list(weights.keys())
-# user_start = "2015-01-01"
-# user_end = "2023-02-01"
+weights = {"MSFT":0.1,"BTCUSD":0.1,"GOOG":0.05,"ETHUSD":0.05,"ASTS":0.05,"VOO":0.4,"VOOG":0.2}
+tickers = list(weights.keys())
+user_start = "2015-01-01"
+user_end = "2023-02-01"
 strat_params = {'weights':weights, 'frequency':'monthly'}
 
 backtest(Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
