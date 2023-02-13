@@ -4,20 +4,20 @@ import config
 
 rest_api = config.rest_api
 
-tickers = input("Enter the stock tickers separated by commas: ").split(',')
-allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-target_allocations = [float(x) for x in allocation_input]
+# tickers = input("Enter the stock tickers separated by commas: ").split(',')
+# allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+# target_allocations = [float(x) for x in allocation_input]
 
-if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-    raise ValueError("The sum of your allocations must be between 0 and 1")
+# if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+#     raise ValueError("The sum of your allocations must be between 0 and 1")
 
-weights = dict(zip(tickers, target_allocations))
+# weights = dict(zip(tickers, target_allocations))
 
-user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+# user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+# user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
 
-if user_end < user_start:
-    raise ValueError("End date must be after the start date")
+# if user_end < user_start:
+#     raise ValueError("End date must be after the start date")
 
 def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=100000):
     cerebro = bt.Cerebro(stdstats=True)
@@ -75,24 +75,31 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
 class Rebalance(bt.Strategy):
 
-   def __init__(self, weights):
-       self.weights = weights
-       self.year_last_rebalanced = -1 
+   def __init__(self, weights, frequency='monthly'):
+       self.freq = frequency
+       self.weights = weights # TODO: Change weights and frequency to proper backtradaer params injection
+       self.month_last_rebalanced = -1 
+       self.year_last_rebalanced = -1
+       self.day_last_rebalanced = -1
 
    def next(self):
-       # if we’ve already rebalanced this year
-       if self.datetime.date().year == self.year_last_rebalanced:
-           return
-       # update year last balanced
-       self.year_last_rebalanced = self.datetime.date().year
-       # enumerate through each security
-       for i,d in enumerate(self.datas):
-           # rebalance portfolio with desired target percents
-            symbol = d._name
-            self.order_target_percent(d, target=self.weights[symbol])
+        match self.freq:
+            case 'yearly':
+                if (self.datetime.date().year == self.year_last_rebalanced):
+                    return
+                self.year_last_rebalanced = self.datetime.date().year
+            case 'monthly':
+                if (self.datetime.date().year == self.year_last_rebalanced) and (self.datetime.date().month == self.month_last_rebalanced):
+                    return
+                self.year_last_rebalanced = self.datetime.date().year
+                self.month_last_rebalanced = self.datetime.date().month
 
-# weights = {"MSFT":0.2,"BTCUSD":0.2,"GOOG":0.2,"ETHUSD":0.3}
-# tickers = ["MSFT","BTCUSD","GOOG","ETHUSD"]
-# user_start = "2020-01-01"
-# user_end = "2023-01-01"
+        for i,d in enumerate(self.datas):
+                symbol = d._name
+                self.order_target_percent(d, target=self.weights[symbol])
+
+weights = {"MSFT":0.2,"BTCUSD":0.2,"GOOG":0.2,"ETHUSD":0.3}
+tickers = ["MSFT","BTCUSD","GOOG","ETHUSD"]
+user_start = "2020-01-01"
+user_end = "2023-01-01"
 backtest(Rebalance, weights, tickers, user_start, user_end, TimeFrame.Day, 100000)
