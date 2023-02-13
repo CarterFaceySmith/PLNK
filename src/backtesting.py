@@ -42,22 +42,25 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbols)
         cerebro.adddata(data)
         print(f'Added {symbols} data to cerebro instance\n')
+        print(f"{alpaca_data.head(3)}\n")
+
 
     elif type(symbols) == list or type(symbols) == set:
         for symbol in symbols:
-            if(symbols in config.crypto):
+            if(symbol in config.crypto):
                 try:
-                    alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
+                    alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
                 except:
                     raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
             else:
                 try:
-                    alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
+                    alpaca_data = rest_api.get_bars(symbol, timeframe, start, end).df
                 except:
                     raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
             cerebro.adddata(data)
             print(f'Added {symbol} data to cerebro instance\n')
+            print(f"{alpaca_data.head(3)}\n")
 
 
     initial_portfolio_value = cerebro.broker.getvalue()
@@ -88,4 +91,8 @@ class Rebalance(bt.Strategy):
             symbol = d._name
             self.order_target_percent(d, target=self.weights[symbol])
 
+# weights = {"MSFT":0.2,"BTCUSD":0.2,"GOOG":0.2,"ETHUSD":0.3}
+# tickers = ["MSFT","BTCUSD","GOOG","ETHUSD"]
+# user_start = "2020-01-01"
+# user_end = "2023-01-01"
 backtest(Rebalance, weights, tickers, user_start, user_end, TimeFrame.Day, 100000)
