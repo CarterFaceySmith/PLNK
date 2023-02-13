@@ -19,6 +19,15 @@ rest_api = config.rest_api
 # if user_end < user_start:
 #     raise ValueError("End date must be after the start date")
 
+'''
+    Backtest function intakes:
+        - The strategy to test, an instance of a defined backtrader.strategy object
+        - A dictionary of parameters to utilise in the strategy
+        - A list of tickers whose data to retrieve for analysis
+        - A start and end date as a string of form 'yyyy-mm-dd'
+        - A TimeFrame interval, either day, month or year to retrieve the tickers' bars
+        - The initial capital amount to test on as an integer, defaulting to 100,000
+'''
 def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=100000):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
@@ -62,28 +71,35 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
             print(f'Added {symbol} data to cerebro instance\n')
             print(f"{alpaca_data.head(3)}\n")
 
-
     initial_portfolio_value = cerebro.broker.getvalue()
-    print(f'Starting Portfolio Value: {initial_portfolio_value}')
+    initial_portfolio_value_str = ('${:,}'.format(int(cerebro.broker.getvalue())))
+    print(f'Starting Portfolio Value: {initial_portfolio_value_str}')
     results = cerebro.run()
     final_portfolio_value = cerebro.broker.getvalue()
-    print(f'Final Portfolio Value: {final_portfolio_value} ---> Return: {(final_portfolio_value/initial_portfolio_value - 1)*100}%')
+    final_portfolio_value_str = ('${:,}'.format(int(cerebro.broker.getvalue())))
+    print(f'Final Portfolio Value: {final_portfolio_value_str} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):.2f}%')
 
     strat = results[0]
     print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
-    cerebro.plot(iplot= False)
+    # cerebro.plot(iplot= False)
 
 class Rebalance(bt.Strategy):
+    params = (
+        ('weights',{}),
+        ('frequency',''),
+    )
 
-   def __init__(self, weights, frequency='monthly'):
-       self.freq = frequency
-       self.weights = weights # TODO: Change weights and frequency to proper backtradaer params injection
-       self.month_last_rebalanced = -1 
-       self.year_last_rebalanced = -1
-       self.day_last_rebalanced = -1
+    def __init__(self, params=None):
+        if params != None:
+            for name, val in params.items(): 
+                #For each thing in fed in params, there must be a matching objects in self.params which is then set to the fed-in corresponding val
+                setattr(self.params, name, val)
+        self.month_last_rebalanced = -1 
+        self.year_last_rebalanced = -1
+        self.day_last_rebalanced = -1
 
-   def next(self):
-        match self.freq:
+    def next(self):
+        match self.params.frequency:
             case 'yearly':
                 if (self.datetime.date().year == self.year_last_rebalanced):
                     return
@@ -96,10 +112,11 @@ class Rebalance(bt.Strategy):
 
         for i,d in enumerate(self.datas):
                 symbol = d._name
-                self.order_target_percent(d, target=self.weights[symbol])
+                self.order_target_percent(d, target=self.params.weights[symbol])
 
 weights = {"MSFT":0.2,"BTCUSD":0.2,"GOOG":0.2,"ETHUSD":0.3}
-tickers = ["MSFT","BTCUSD","GOOG","ETHUSD"]
-user_start = "2020-01-01"
-user_end = "2023-01-01"
-backtest(Rebalance, weights, tickers, user_start, user_end, TimeFrame.Day, 100000)
+tickers = list(weights.keys())
+user_start = "2015-01-01"
+user_end = "2023-02-01"
+strat_params = {'weights':weights, 'frequency':'monthly'}
+backtest(Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
