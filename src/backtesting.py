@@ -5,20 +5,29 @@ from dateutil.relativedelta import relativedelta
 
 rest_api = config.rest_api
 
-# tickers = input("Enter the stock tickers separated by commas: ").split(',')
-# allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-# target_allocations = [float(x) for x in allocation_input]
+def backtest_init():
+    print("Available strategies:")
+    strategy = strategies.select_strat()
 
-# if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-#     raise ValueError("The sum of your allocations must be between 0 and 1")
+    tickers = input("Enter the stock tickers separated by commas: ").split(',')
+    allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+    target_allocations = [float(x) for x in allocation_input]
 
-# weights = dict(zip(tickers, target_allocations))
+    if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+        raise ValueError("The sum of your allocations must be between 0 and 1")
 
-# user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-# user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+    weights = dict(zip(tickers, target_allocations))
 
-# if user_end < user_start:
-#     raise ValueError("End date must be after the start date")
+    user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+    user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+
+    if user_end < user_start:
+        raise ValueError("End date must be after the start date")
+    
+    # strat_params = {'weights':weights, 'frequency':'monthly'}
+    # TODO: Inject dynamic params into backtest call regardless of the strategy used
+    
+    backtest(strategy, None, tickers, user_start, user_end, TimeFrame.Day, 100000, False)
 
 '''
     Backtest function intakes:
@@ -30,7 +39,7 @@ rest_api = config.rest_api
         - The initial capital amount to test on as an integer, defaulting to 100,000
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end="2023-02-01", timeframe=TimeFrame.Day, cash=100000, plot=bool):
+def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end="2023-02-01", timeframe=TimeFrame.Day, cash=100000, plotting=bool):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     cerebro.addstrategy(strategy, strat_params)
@@ -54,15 +63,17 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     strat = results[0]
     sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
     print(f'Sharpe Ratio: {sharpe_rat:.2f}')
-    if plot:
+    if plotting:
         cerebro.plot()
 
-weights = {"ETHUSD":1.0}
-tickers = list(weights.keys())
-user_start = "2016-06-01"
-user_end = "2023-02-01"
+def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end="2023-02-01", timeframe=TimeFrame.Day, cash=100000, plotting=bool):
+    
+
+# weights = {"VOO":0.6,"VOOG":0.3,"BTCUSD":0.05,"ETHUSD":0.025}
+# tickers = list(weights.keys())
+# user_start = "2016-06-01"
+# user_end = "2023-02-01"
 
 # strat_params = {'weights':weights, 'frequency':'monthly'}
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, False)
-
 # backtest(strategies.ETHScalping, None, tickers, user_start, user_end, TimeFrame.Day, 100000, False)
