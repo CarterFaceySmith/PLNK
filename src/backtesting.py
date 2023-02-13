@@ -1,6 +1,7 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
-import config, strategies
+import config, strategies, datetime
+from dateutil.relativedelta import relativedelta
 
 rest_api = config.rest_api
 
@@ -22,44 +23,46 @@ rest_api = config.rest_api
 '''
     Backtest function intakes:
         - The strategy to test, an instance of a defined backtrader.strategy object
-        - A dictionary of parameters to utilise in the strategy
         - A list of tickers whose data to retrieve for analysis
         - A start and end date as a string of form 'yyyy-mm-dd'
+        - A dictionary of parameters to utilise in the strategy
         - A TimeFrame interval, either day, month or year to retrieve the tickers' bars
         - The initial capital amount to test on as an integer, defaulting to 100,000
+        - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=100000):
+def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end="2023-02-01", timeframe=TimeFrame.Day, cash=100000, plot=bool):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     cerebro.addstrategy(strategy, strat_params)
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
-
-    if len(symbols) <= 0 or len(strat_params) <= 0:
-        raise ValueError("Invalid symbols list and/or parameters were fed into the backtest function")
     
-    else:
-        for symbol in symbols:
-            alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
-            data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
-            cerebro.adddata(data)
-            print(f'Added {symbol} data to cerebro instance\n')
-            print(f"{alpaca_data.head(3)}\n")
+    for symbol in symbols:
+        alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
+        data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
+        cerebro.adddata(data)
+        print(f'Added {symbol} data to cerebro instance\n')
+        print(f"{alpaca_data.head(3)}\n")
 
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
     results = cerebro.run(maxcpus=1)
     final_portfolio_value = cerebro.broker.getvalue()
     print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
+    difference_in_years = relativedelta(datetime.datetime.strptime(user_end, "%Y-%m-%d"), datetime.datetime.strptime(user_start, "%Y-%m-%d")).years
+    print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
 
     strat = results[0]
     sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
     print(f'Sharpe Ratio: {sharpe_rat:.2f}')
-    # cerebro.plot(iplot= False)
+    if plot:
+        cerebro.plot()
 
-weights = {"MSFT":0.1,"BTCUSD":0.1,"GOOG":0.05,"ETHUSD":0.05,"ASTS":0.05,"VOO":0.4,"VOOG":0.2}
+weights = {"ETHUSD":1.0}
 tickers = list(weights.keys())
-user_start = "2015-01-01"
+user_start = "2016-06-01"
 user_end = "2023-02-01"
-strat_params = {'weights':weights, 'frequency':'monthly'}
 
-backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
+# strat_params = {'weights':weights, 'frequency':'monthly'}
+# backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, False)
+
+# backtest(strategies.ETHScalping, None, tickers, user_start, user_end, TimeFrame.Day, 100000, False)
