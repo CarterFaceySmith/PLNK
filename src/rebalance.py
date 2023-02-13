@@ -4,15 +4,8 @@ import config
 
 trading_client, rest_api, crypto_client, stock_client = config.return_clients()
 
-# def get_pause():
-    # now = datetime.now()
-    # next_day = now.replace(second=0, microsecond=0) + timedelta(days=1)
-    # pause = math.ceil((next_day - now).seconds)
-    # print(f"Sleep for {pause}")
-    # return pause
-
 '''
-The rebalance function intakes:
+The perform_rebalance function intakes:
     Parameter 1: A dictionary of Alpaca API tickers and corresponding percentage allocations (0 < sum(x) < 1)
     Parameter 2: An integer to set the decimal precision of the orders
 '''
@@ -52,7 +45,3 @@ def perform_rebalance(desired_allocations, precision=3):
         print(f"Order submitted: {market_order.qty} units of {market_order.symbol}\n")
 
     print("All orders submitted.")
-
-# percent_allocations = { "BTCUSD" : 0.1 , "ETHUSD" : 0.05, "VOO" : 0.25, "VOOG" : 0.40, "MSFT" : 0.1}
-# perform_rebalance(percent_allocations)
-# time.sleep(get_pause())
