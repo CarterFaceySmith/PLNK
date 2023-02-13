@@ -13,7 +13,13 @@ if sum(target_allocations) > 1 or sum(target_allocations) < 0:
 
 weights = dict(zip(tickers, target_allocations))
 
-def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=10000):
+user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+
+if user_end < user_start:
+    raise ValueError("End date must be after the start date")
+
+def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Day, cash=100000):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     cerebro.addstrategy(strategy, strat_params)
@@ -24,19 +30,31 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
     elif type(symbols) == str:
         if(symbols in config.crypto):
-            alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
+            try:
+                alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
+            except:
+                raise(BaseException(f"Error retrieving {symbols} bars from Alpaca API"))
         else:
-            alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
+            try:
+                alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
+            except:
+                raise(BaseException(f"Error retrieving {symbols} bars from Alpaca API"))
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbols)
         cerebro.adddata(data)
         print(f'Added {symbols} data to cerebro instance\n')
 
     elif type(symbols) == list or type(symbols) == set:
         for symbol in symbols:
-            if(symbol in config.crypto):
-                alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
+            if(symbols in config.crypto):
+                try:
+                    alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
+                except:
+                    raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
             else:
-                alpaca_data = rest_api.get_bars(symbol, timeframe, start, end).df
+                try:
+                    alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
+                except:
+                    raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
             cerebro.adddata(data)
             print(f'Added {symbol} data to cerebro instance\n')
@@ -50,7 +68,7 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
     strat = results[0]
     print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
-    # cerebro.plot(iplot= False)
+    cerebro.plot(iplot= False)
 
 class Rebalance(bt.Strategy):
 
@@ -70,4 +88,4 @@ class Rebalance(bt.Strategy):
             symbol = d._name
             self.order_target_percent(d, target=self.weights[symbol])
 
-backtest(Rebalance, weights, tickers, '2020-01-01', '2023-02-01', TimeFrame.Day, 100000)
+backtest(Rebalance, weights, tickers, user_start, user_end, TimeFrame.Day, 100000)
