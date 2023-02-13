@@ -72,12 +72,10 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
             print(f"{alpaca_data.head(3)}\n")
 
     initial_portfolio_value = cerebro.broker.getvalue()
-    initial_portfolio_value_str = ('${:,}'.format(int(cerebro.broker.getvalue())))
-    print(f'Starting Portfolio Value: {initial_portfolio_value_str}')
+    print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
     results = cerebro.run()
     final_portfolio_value = cerebro.broker.getvalue()
-    final_portfolio_value_str = ('${:,}'.format(int(cerebro.broker.getvalue())))
-    print(f'Final Portfolio Value: {final_portfolio_value_str} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):.2f}%')
+    print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
 
     strat = results[0]
     print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
