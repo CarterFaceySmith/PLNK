@@ -1,6 +1,6 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
-import config
+import config, strategies
 
 rest_api = config.rest_api
 
@@ -36,36 +36,10 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
     if len(symbols) <= 0 or len(strat_params) <= 0:
         raise ValueError("Invalid symbols list and/or parameters were fed into the backtest function")
-
-    elif type(symbols) == str:
-        if(symbols in config.crypto):
-            try:
-                alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
-            except:
-                raise(BaseException(f"Error retrieving {symbols} bars from Alpaca API"))
-        else:
-            try:
-                alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
-            except:
-                raise(BaseException(f"Error retrieving {symbols} bars from Alpaca API"))
-        data = bt.feeds.PandasData(dataname=alpaca_data, name=symbols)
-        cerebro.adddata(data)
-        print(f'Added {symbols} data to cerebro instance\n')
-        print(f"{alpaca_data.head(3)}\n")
-
-
-    elif type(symbols) == list or type(symbols) == set:
+    
+    else:
         for symbol in symbols:
-            if(symbol in config.crypto):
-                try:
-                    alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
-                except:
-                    raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
-            else:
-                try:
-                    alpaca_data = rest_api.get_bars(symbol, timeframe, start, end).df
-                except:
-                    raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
+            alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
             cerebro.adddata(data)
             print(f'Added {symbol} data to cerebro instance\n')
@@ -82,42 +56,10 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
     print(f'Sharpe Ratio: {sharpe_rat:.2f}')
     # cerebro.plot(iplot= False)
 
-class Rebalance(bt.Strategy):
-    params = (
-        ('weights',{}),
-        ('frequency',''),
-        ('maperiod', 15)
-    )
-
-    def __init__(self, params=None):
-        if params != None:
-            for name, val in params.items(): 
-                #For each thing in fed in params, there must be a matching objects in self.params which is then set to the fed-in corresponding val
-                setattr(self.params, name, val)
-        self.month_last_rebalanced = -1 
-        self.year_last_rebalanced = -1
-        self.day_last_rebalanced = -1
-
-    def next(self):
-        match self.params.frequency:
-            case 'yearly':
-                if (self.datetime.date().year == self.year_last_rebalanced):
-                    return
-                self.year_last_rebalanced = self.datetime.date().year
-            case 'monthly':
-                if (self.datetime.date().year == self.year_last_rebalanced) and (self.datetime.date().month == self.month_last_rebalanced):
-                    return
-                self.year_last_rebalanced = self.datetime.date().year
-                self.month_last_rebalanced = self.datetime.date().month
-
-        for i,d in enumerate(self.datas):
-                symbol = d._name
-                self.order_target_percent(d, target=self.params.weights[symbol])
-
 weights = {"MSFT":0.1,"BTCUSD":0.1,"GOOG":0.05,"ETHUSD":0.05,"ASTS":0.05,"VOO":0.4,"VOOG":0.2}
 tickers = list(weights.keys())
 user_start = "2015-01-01"
 user_end = "2023-02-01"
 strat_params = {'weights':weights, 'frequency':'monthly'}
 
-backtest(Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
+backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
