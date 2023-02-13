@@ -19,22 +19,28 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
     cerebro.addstrategy(strategy, strat_params)
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
 
-    if type(symbols) == str:
+    if len(symbols) <= 0 or len(strat_params) <= 0:
+        raise ValueError("Invalid symbols list and/or parameters were fed into the backtest function")
+
+    elif type(symbols) == str:
         if(symbols in config.crypto):
             alpaca_data = rest_api.get_crypto_bars(symbols, timeframe, start, end).df
         else:
             alpaca_data = rest_api.get_bars(symbols, timeframe, start, end).df
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbols)
         cerebro.adddata(data)
+        print(f'Added {symbols} data to cerebro instance\n')
 
     elif type(symbols) == list or type(symbols) == set:
         for symbol in symbols:
             if(symbol in config.crypto):
-                alpaca_data = rest_api.crypto_bars(symbol, timeframe, start, end).df
+                alpaca_data = rest_api.get_crypto_bars(symbol, timeframe, start, end).df
             else:
                 alpaca_data = rest_api.get_bars(symbol, timeframe, start, end).df
             data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
             cerebro.adddata(data)
+            print(f'Added {symbol} data to cerebro instance\n')
+
 
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value}')
@@ -69,4 +75,4 @@ class Rebalance(bt.Strategy):
             symbol = d._name
             self.order_target_percent(d, target=self.params.weights[symbol])
 
-backtest(Rebalance, weights, tickers, '2022-01-01', '2023-02-01', TimeFrame.Day, 100000)
+backtest(Rebalance, weights, tickers, '2020-01-01', '2023-02-01', TimeFrame.Day, 100000)
