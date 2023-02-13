@@ -73,12 +73,13 @@ def backtest(strategy, strat_params, symbols, start, end, timeframe=TimeFrame.Da
 
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
-    results = cerebro.run()
+    results = cerebro.run(maxcpus=1)
     final_portfolio_value = cerebro.broker.getvalue()
     print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
 
     strat = results[0]
-    print('Sharpe Ratio:', strat.analyzers.mysharpe.get_analysis()['sharperatio'])
+    sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
+    print(f'Sharpe Ratio: {sharpe_rat:.2f}')
     # cerebro.plot(iplot= False)
 
 class Rebalance(bt.Strategy):
@@ -117,4 +118,5 @@ tickers = list(weights.keys())
 user_start = "2015-01-01"
 user_end = "2023-02-01"
 strat_params = {'weights':weights, 'frequency':'monthly'}
+
 backtest(Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000)
