@@ -109,14 +109,14 @@ def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     if plotting:
         cerebro.plot()
 
-weights = {"ETHUSD":1.0}
-tickers = list(weights.keys())
-user_start = "2016-06-01"
-user_end = "2023-02-01"
+# weights = {"ETHUSD":1.0}
+# tickers = list(weights.keys())
+# user_start = "2016-06-01"
+# user_end = "2023-02-01"
 
-# strat_params = {'buy_threshold': range(500,800,50),
-#                 'sell_threshold': range(800,1000,50),
-#                 'sma_period': range(30,50,5)}
+# strat_params = {'buy_threshold': 800,
+#                 'sell_threshold': 900,
+#                 'sma_period': 50}
 # optimise(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
-# backtest(strategies.ETHScalping, None, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+# backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
