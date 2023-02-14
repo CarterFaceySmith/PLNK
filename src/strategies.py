@@ -15,6 +15,12 @@ class Rebalance(bt.Strategy):
         self.month_last_rebalanced = -1 
         self.year_last_rebalanced = -1
         self.day_last_rebalanced = -1
+        self.start_cash = self.broker.getvalue()
+
+    def stop(self):
+        profit = round(self.broker.getvalue() - self.start_cash,2)
+        print(f'Profit: {profit}\nSMA Period: {self.params.sma_period}\nBuy Threshold: {self.params.buy_threshold}\nSell Threshold: {self.params.sell_threshold}')
+
 
     def next(self):
         match self.params.frequency:
@@ -46,6 +52,7 @@ class ETHScalping(bt.Strategy):
         self.sma = bt.indicators.SimpleMovingAverage(
             self.data.close, period=self.params.sma_period
         )
+        self.start_cash = self.broker.getvalue()
 
     def next(self):
         if not self.position:
@@ -54,6 +61,10 @@ class ETHScalping(bt.Strategy):
         else:
             if self.data.close[0] > self.params.sell_threshold:
                 self.sell(price=self.data.close[0])
+
+    def stop(self):
+        profit = round(self.broker.getvalue() - self.start_cash,2)
+        print(f'Profit: {profit}\nSMA Period: {self.params.sma_period}\nBuy Threshold: {self.params.buy_threshold}\nSell Threshold: {self.params.sell_threshold}\n')
 
 strategy_dict = {'Rebalance': Rebalance, 'Ethereum Scalping': ETHScalping}
 strategy_list = list(strategy_dict.keys())
