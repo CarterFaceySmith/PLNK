@@ -1,5 +1,6 @@
 import backtrader as bt
 
+# Strategies
 class Rebalance(bt.Strategy):
     params = (
         ('weights',{}),
@@ -66,6 +67,7 @@ class ETHScalping(bt.Strategy):
         profit = round(self.broker.getvalue() - self.start_cash,2)
         print(f'Profit: {profit}\nSMA Period: {self.params.sma_period}\nBuy Threshold: {self.params.buy_threshold}\nSell Threshold: {self.params.sell_threshold}\n')
 
+# Utilities
 strategy_dict = {'Rebalance': Rebalance, 'Ethereum Scalping': ETHScalping}
 strategy_list = list(strategy_dict.keys())
 
