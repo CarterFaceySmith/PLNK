@@ -1,6 +1,6 @@
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-import config
+from src import config
 
 trading_client, rest_api, crypto_client, stock_client = config.return_clients()
 

@@ -1,4 +1,5 @@
 import backtrader as bt
+import re
 
 # NOTE: You cannot iterate over an instance of self.params in a strategy
 
@@ -6,7 +7,6 @@ import backtrader as bt
 class Rebalance(bt.Strategy):
     params = (
         ('frequency',''),
-        # TODO: Change from weights dict to individual ticker params so the strat can be used in optimise()
     )
 
     def __init__(self, params=None):
@@ -23,8 +23,11 @@ class Rebalance(bt.Strategy):
         profit = round(self.broker.getvalue() - self.start_cash,2)
         print(f'Profit: {profit:,.2f}\nPortfolio:')
         for item in self.init_params: 
-            if len(item) <= 4: # TODO: Would be better to replace this with regex matching
+            if re.match(r'[A-Z]{6}', item):
                 print(f'\t{item}:\t{self.init_params[item]}')
+
+            # if re.match(r'[A-Z]{6}', item): 
+            #     print(f'\t{item}:\t{self.init_params[item]}')
 
     def next(self):
         match self.params.frequency:
@@ -40,7 +43,7 @@ class Rebalance(bt.Strategy):
 
         for i,d in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
-            if len(d._name) <=4: # TODO: Would be better to replace this with regex matching
+            if re.match(r'[A-Z]{6}', d._name):
                 symbol = d._name
                 allocation = self.params._get(symbol)
                 self.order_target_percent(symbol, self.params._get(symbol))
