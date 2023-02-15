@@ -2,39 +2,82 @@ import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
 import config, strategies, datetime, collections
 from dateutil.relativedelta import relativedelta
+import numpy as np
 collections.Iterable = collections.abc.Iterable
 
 rest_api = config.rest_api
 
-def bt_and_opt_init():
+def bt_opt_init(mode=''):
     print("Available strategies:")
     strategy = strategies.select_strat()
+    strat_params = {}
 
-    # TODO: Change to loop through and intake required inputs for each strat param
-    # E.g. input(f"input the value of {strategies.ETHScalping.params.buy_threshold}")
+    if mode == 'BACKTEST':
+        for param in strategy.params._getkeys():
+            strat_params[param] = input(f"input the value of the '{param}' parameter: ")
 
-    # TODO: Add functionality to select and input optimiser params
+        tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
+        allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+        target_allocations = [float(x) for x in allocation_input]
+        # TODO: Really should error check for negative allocation vals instead of overall sum
 
-    tickers = input("Enter the stock tickers separated by commas: ").split(',')
-    allocation_input = input("Enter the target allocations for each stock separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-    target_allocations = [float(x) for x in allocation_input]
+        if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+            raise ValueError("The sum of your allocations must be between 0 and 1")
 
-    if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-        raise ValueError("The sum of your allocations must be between 0 and 1")
+        for ticker in tickers:
+            if len(ticker) > 4:
+                raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
+            else:
+                strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
-    weights = dict(zip(tickers, target_allocations))
 
-    user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-    user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
-    comm = input("Enter the per trade commission fee (e.g. 0.1): ")
+        user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+        user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+        comm = float(input("Enter the per-trade commission fee (e.g. 0.1): "))
 
-    if user_end < user_start:
-        raise ValueError("End date must be after the start date")
+        if user_end < user_start:
+            raise ValueError("End date must be after the start date")
+        
+        cash = int(input("Enter the starting cash amount: "))
+        plot_input = input("Would you like to plot the results? (y/n): ")
+        plot = True if plot_input == 'y' else False
+        
+        backtest(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
     
-    # strat_params = {'weights':weights, 'frequency':'monthly'}
-    # TODO: Inject dynamic params into backtest call regardless of the strategy used
-    
-    # backtest(strategy, None, tickers, user_start, user_end, TimeFrame.Day, 100000, comm, False)
+    if mode == 'OPTIMISE':  
+        for param in strategy.params._getkeys():
+            lower = input(f"input the lower bound of the '{param}' parameter: ")
+            upper = input(f"input the upper bound of the '{param}' parameter: ")
+            step = input(f"input the step size of the '{param}' parameter: ")
+            strat_params[param] = np.arange(float(lower), float(upper), float(step))
+
+        tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
+        allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
+        target_allocations = [float(x) for x in allocation_input]
+        # TODO: Really should error check for negative allocation vals instead of overall sum
+
+        if sum(target_allocations) > 1 or sum(target_allocations) < 0:
+            raise ValueError("The sum of your allocations must be between 0 and 1")
+
+        for ticker in tickers:
+            if len(ticker) > 4: # TODO: Change to regex matching so crypto and tickers can be used, or could just query from crypto list and add regex for stock tickers
+                raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
+            else:
+                strat_params[ticker] = target_allocations[tickers.index(ticker)]
+
+
+        user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
+        user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
+        comm = float(input("Enter the per-trade commission fee (e.g. 0.1): "))
+
+        if user_end < user_start:
+            raise ValueError("End date must be after the start date")
+        
+        cash = int(input("Enter the starting cash amount: "))
+        plot_input = input("Would you like to plot the results? (y/n): ")
+        plot = True if plot_input == 'y' else False
+        
+        optimise(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
 
 '''
     Backtest function intakes:
@@ -62,11 +105,11 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
 
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
-    print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
+    print(f'Starting Portfolio Value: {initial_portfolio_value}')
     results = cerebro.run(maxcpus=1)
     final_portfolio_value = cerebro.broker.getvalue()
     print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
-    difference_in_years = relativedelta(datetime.datetime.strptime(user_end, "%Y-%m-%d"), datetime.datetime.strptime(user_start, "%Y-%m-%d")).years
+    difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
     print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
 
     strat = results[0]
@@ -104,19 +147,25 @@ def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     results = cerebro.run(maxcpus=1)
     final_portfolio_value = cerebro.broker.getvalue()
     print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
-    difference_in_years = relativedelta(datetime.datetime.strptime(user_end, "%Y-%m-%d"), datetime.datetime.strptime(user_start, "%Y-%m-%d")).years
+    difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
     print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
     if plotting:
         cerebro.plot()
 
-# weights = {"ETHUSD":1.0}
+# weights = {"VOO":0.5}
 # tickers = list(weights.keys())
 # user_start = "2016-06-01"
 # user_end = "2023-02-01"
 
-# strat_params = {'buy_threshold': 800,
-#                 'sell_threshold': 900,
-#                 'sma_period': 50}
-# optimise(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+# strat_params = {'frequency': 'monthly',
+#                 'VOO': 0.2,
+#                 'AAPL': 0.2,
+#                 }
+
+# E.g. strat_params['VOO'] = np.linspace(0,1,10)
+# NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats
+
+# optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+bt_opt_init('OPTIMISE')
