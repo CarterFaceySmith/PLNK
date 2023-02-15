@@ -51,10 +51,14 @@ def bt_opt_init(mode=''):
     
     if mode == 'OPTIMISE':  
         for param in strategy.params._getkeys():
-            lower = int(input(f"input the lower bound of the '{param}' parameter: "))
-            upper = int(input(f"input the upper bound of the '{param}' parameter: "))
-            step = int(input(f"input the step size of the '{param}' parameter: "))
-            strat_params[param] = np.linspace(lower, upper, step)
+            opt_param = input(f"Would you like to optimise the '{param}' parameter? (y/n): ")
+            if opt_param == 'y':
+                lower = int(input(f"input the lower bound of the '{param}' parameter: "))
+                upper = int(input(f"input the upper bound of the '{param}' parameter: "))
+                step = int(input(f"input the step size of the '{param}' parameter: "))
+                strat_params[param] = np.linspace(lower, upper, step)
+            else:
+                strat_params[param] = input(f"input the value of the '{param}' parameter: ")
 
         tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
         allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
@@ -68,12 +72,18 @@ def bt_opt_init(mode=''):
         if sum(target_allocations) > 1 or sum(target_allocations) < 0:
             raise ValueError("The sum of your allocations must be between 0 and 1")
 
-        # for ticker in tickers:
-        #     if re.match(r'[A-Z]{6}', ticker):
-        #         raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
-        #     # else:
-            #     strat_params[ticker] = target_allocations[tickers.index(ticker)]
-
+        for ticker in tickers:
+            if re.match(r'[A-Z]{6}', ticker):
+                raise ValueError(f"{ticker} is invalid")
+            else:
+                opt_ticker = input(f"Would you like to optimise the '{ticker}' allocation? (y/n): ")
+                if opt_ticker == 'y':
+                    lower = int(input(f"input the lower bound of the '{ticker}' allocation: "))
+                    upper = int(input(f"input the upper bound of the '{ticker}' allocation: "))
+                    step = int(input(f"input the step size of the '{ticker}' allocation: "))
+                    strat_params[ticker] = np.linspace(lower, upper, step)
+                else:
+                    strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
         user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
         user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
@@ -130,7 +140,7 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
 '''
     Optimise function intakes:
         - The strategy to test, an instance of a defined backtrader.strategy object
-        - A dictionary of parameters to utilise in the strategy in the form of ranges to optimise for, this is then dereferenced in the optstrategy call
+        - A dictionary of parameters to utilise in the strategy in the form of ranges to optimise for, this is then dereferenced/'unpacked' in the optstrategy call using **
         - A list of tickers whose data to retrieve for analysis
         - A start and end date as a string of form 'yyyy-mm-dd'
         - A TimeFrame interval, either day, month or year to retrieve the tickers' bars
