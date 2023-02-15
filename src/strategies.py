@@ -85,7 +85,7 @@ strategy_list = list(strategy_dict.keys())
 def list_strats():
     i = 1
     for name in strategy_dict:
-        print(f'{i}: {name}')
+        print(f'\t{i}: {name}')
         i += 1
     print()
 
