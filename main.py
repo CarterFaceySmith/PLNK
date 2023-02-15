@@ -1,8 +1,19 @@
-from src import config
+from src import config, rebalance, backtesting
+
+def menu():
+    choice = input('1. Main menu\n2. Exit')
+    match choice:
+        case '1':
+            main()
+        case '2':
+            print('Goodbye.')
+            exit(0)
+        case _:
+            raise ValueError('Invalid input')
 
 def main():
     print("Welcome.")
-    mode = input("Select your trading mode:\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Exit\n")
+    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Exit\n")
 
     match mode:
         case "1":
@@ -14,6 +25,7 @@ def main():
                     backtesting.bt_opt_init(mode='OPTIMISE')
                 case _:
                     raise ValueError("Invalid input")
+            menu()
                 
         case '2':
             tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
@@ -30,23 +42,28 @@ def main():
             portfolio = dict(zip(tickers, target_allocations))
             prec = input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): ")
 
-            rebalance.rebalance(portfolio, prec)
+            confirmation = input("Confirm rebalance? (y/n)")
+            if confirmation == 'y':
+                rebalance.rebalance(portfolio, prec)
+            else:
+                menu()
 
         case '3':
             confirm = input("Confirm liquidation of portfolio positions? (y/n)")
             if confirm == 'y':
                 config.liquidate_portfolio()
+            menu()
 
         case '4':
             config.get_portfolio_stats()
 
+            menu()
+
         case '5':
-            # Default exit
             print("Goodbye.")
             exit(0)
 
         case _:
-            # Error catch exit
             raise BaseException("Invalid input or crash")
         
 if __name__ == '__main__':

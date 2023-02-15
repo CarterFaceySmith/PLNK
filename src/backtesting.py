@@ -1,6 +1,7 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
-import config, strategies, datetime, collections
+from src import config, strategies
+import datetime, collections
 from dateutil.relativedelta import relativedelta
 import numpy as np
 collections.Iterable = collections.abc.Iterable
@@ -19,7 +20,11 @@ def bt_opt_init(mode=''):
         tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
         allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
         target_allocations = [float(x) for x in allocation_input]
-        # TODO: Really should error check for negative allocation vals instead of overall sum
+        for val in target_allocations:
+            if val < 0:
+                raise ValueError("Target allocations must be positive")
+            elif val > 1:
+                raise ValueError("Target allocations must be less than 1.0")
 
         if sum(target_allocations) > 1 or sum(target_allocations) < 0:
             raise ValueError("The sum of your allocations must be between 0 and 1")
@@ -54,13 +59,17 @@ def bt_opt_init(mode=''):
         tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
         allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
         target_allocations = [float(x) for x in allocation_input]
-        # TODO: Really should error check for negative allocation vals instead of overall sum
+        for val in target_allocations:
+            if val < 0:
+                raise ValueError("Target allocations must be positive")
+            elif val > 1:
+                raise ValueError("Target allocations must be less than 1.0")
 
         if sum(target_allocations) > 1 or sum(target_allocations) < 0:
             raise ValueError("The sum of your allocations must be between 0 and 1")
 
         # for ticker in tickers:
-        #     if len(ticker) > 4: # TODO: Change to regex matching so crypto and tickers can be used, or could just query from crypto list and add regex for stock tickers
+        #     if re.match(r'[A-Z]{6}', ticker):
         #         raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
         #     # else:
             #     strat_params[ticker] = target_allocations[tickers.index(ticker)]
