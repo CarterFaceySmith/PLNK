@@ -46,10 +46,10 @@ def bt_opt_init(mode=''):
     
     if mode == 'OPTIMISE':  
         for param in strategy.params._getkeys():
-            lower = input(f"input the lower bound of the '{param}' parameter: ")
-            upper = input(f"input the upper bound of the '{param}' parameter: ")
-            step = input(f"input the step size of the '{param}' parameter: ")
-            strat_params[param] = np.arange(float(lower), float(upper), float(step))
+            lower = int(input(f"input the lower bound of the '{param}' parameter: "))
+            upper = int(input(f"input the upper bound of the '{param}' parameter: "))
+            step = int(input(f"input the step size of the '{param}' parameter: "))
+            strat_params[param] = np.linspace(lower, upper, step)
 
         tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
         allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
@@ -59,11 +59,11 @@ def bt_opt_init(mode=''):
         if sum(target_allocations) > 1 or sum(target_allocations) < 0:
             raise ValueError("The sum of your allocations must be between 0 and 1")
 
-        for ticker in tickers:
-            if len(ticker) > 4: # TODO: Change to regex matching so crypto and tickers can be used, or could just query from crypto list and add regex for stock tickers
-                raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
-            else:
-                strat_params[ticker] = target_allocations[tickers.index(ticker)]
+        # for ticker in tickers:
+        #     if len(ticker) > 4: # TODO: Change to regex matching so crypto and tickers can be used, or could just query from crypto list and add regex for stock tickers
+        #         raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
+        #     # else:
+            #     strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
 
         user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
