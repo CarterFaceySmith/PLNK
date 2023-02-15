@@ -1,7 +1,7 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
 from src import config, strategies
-import datetime, collections
+import datetime, collections, re
 from dateutil.relativedelta import relativedelta
 import numpy as np
 collections.Iterable = collections.abc.Iterable
@@ -103,7 +103,7 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     cerebro.addstrategy(strategy, strat_params)
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
+    # cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
     
     for symbol in symbols:
         alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
@@ -121,9 +121,9 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
     print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
 
-    strat = results[0]
-    sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
-    print(f'Sharpe Ratio: {sharpe_rat:.2f}')
+    # strat = results[0]
+    # sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
+    # print(f'Sharpe Ratio: {sharpe_rat:.2f}')
     if plotting:
         cerebro.plot()
 
@@ -177,4 +177,3 @@ def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
 # optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
-bt_opt_init('OPTIMISE')

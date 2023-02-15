@@ -17,7 +17,7 @@ def main():
 
     match mode:
         case "1":
-            bt_opt_mode = input("Select your mode:\t\n1. Backtest\t\n2. Optimise\n")
+            bt_opt_mode = input("Select your mode:\n\t1. Backtest\n\t2. Optimise\n")
             match bt_opt_mode:
                 case "1":
                     backtesting.bt_opt_init(mode='BACKTEST')
