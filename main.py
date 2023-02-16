@@ -42,7 +42,7 @@ def main():
                     raise ValueError(f"{ticker} is invalid")
                 
             portfolio = dict(zip(tickers, target_allocations))
-            prec = input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): ")
+            prec = int(input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): "))
 
             confirmation = input("Confirm rebalance? (y/n)")
             if confirmation == 'y':
