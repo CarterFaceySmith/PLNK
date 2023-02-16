@@ -95,7 +95,13 @@ def input_portfolio():
 
 def input_comm_cash():
     comm = float(input("Enter the per-trade commission fee (e.g. 0.1): "))
+    if (comm < 0.0) or (comm > 100.0):
+        raise ValueError('The value for per-trade commision should be somewhere between 0.0 and 100.0, this depends on your broker')
     cash = int(input("Enter the starting cash amount: "))
+    if (cash < 0.0):
+        raise ValueError('The starting cash amount cannot be negative')
+    else:
+        return comm, cash
 
 def input_plotting():
     plot_input = input("Would you like to plot the results? (y/n): ")
@@ -103,10 +109,10 @@ def input_plotting():
 
 def construct_market_order(symbol,allocation,order_side='',prec=3):
     if symbol in crypto:
-        time_in_force = TimeInForce.GTC
+        time_in_force = TimeInForce.GTC # Required for crypto market orders
         market_price = rest_api.get_latest_crypto_bar(symbol, exchange='FTXU').c
     else:
-        time_in_force = TimeInForce.DAY
+        time_in_force = TimeInForce.DAY # Can be changed
         market_price = rest_api.get_latest_bar(symbol).c
     
     target_holding = round(allocation / market_price, prec)
