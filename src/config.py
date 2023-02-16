@@ -3,7 +3,7 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient
-import re
+import re, datetime
 
 # Settings
 API_KEY = 'PKB0OUCULGGX08VG0KW0'
@@ -77,10 +77,17 @@ def validate_allocations(allocations):
         print(f'Your target allocations appear to be valid')
     
 def input_valid_dates():
+    curr_date = datetime.date.today()
     user_start = input("Enter a start date for testing (format: yyyy-mm-dd): ")
     user_end = input("Enter an end date for testing: (format: yyyy-mm-dd): ")
-    # TODO: Date validation using strptime()
-    if user_end < user_start:
+    val_start = datetime.datetime.strptime(user_start, "%Y-%m-%d")
+    val_end = datetime.datetime.strptime(user_end, "%Y-%m-%d")
+
+    if (val_start.year < 1950) or (val_start.year > curr_date.year):
+        raise ValueError(f'The start date must be between 1950-01-01 and today\'s date: {curr_date}')
+    elif (val_end > curr_date):
+        raise ValueError('The end date must be before today\'s date: {curr_date}')
+    elif user_end < user_start:
             raise ValueError("End date must be after the start date")
     else:
         return user_start, user_end
