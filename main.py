@@ -1,7 +1,8 @@
 from src import config, rebalance, backtesting
+import re
 
 def menu():
-    choice = input('1. Main menu\n2. Exit')
+    choice = input('1. Main menu\n2. Exit\n')
     match choice:
         case '1':
             main()
@@ -36,8 +37,8 @@ def main():
                 raise ValueError("The sum of your allocations must be between 0 and 1")
 
             for ticker in tickers:
-                if len(ticker) > 6:
-                    raise ValueError(f"Tickers must be 6 characters or less, {ticker} is invalid")
+                if not re.match(r'[A-Z]{3,6}', ticker):
+                    raise ValueError(f"{ticker} is invalid")
                 
             portfolio = dict(zip(tickers, target_allocations))
             prec = input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): ")
