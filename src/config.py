@@ -6,6 +6,7 @@ from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient
 import re, datetime
 
 # Settings
+SYSTEM_MODE = 'PAPER'
 API_KEY = 'PKB0OUCULGGX08VG0KW0'
 SECRET_KEY = 'EpsYl1t06L03vecfmzK0aZNgcQ4JHDDWHdiSSgQU'
 crypto = ['BTCUSD', 'ETHUSD', 'LTCUSD']
@@ -117,7 +118,7 @@ def input_plotting():
 def construct_market_order(symbol,allocation,order_side='',prec=3):
     if symbol in crypto:
         time_in_force = TimeInForce.GTC # Required for crypto market orders
-        market_price = rest_api.get_latest_crypto_bar(symbol, exchange='FTXU').c
+        market_price = rest_api.get_latest_crypto_bar(symbol, exchange='CBSE').c
     else:
         time_in_force = TimeInForce.DAY # Can be changed
         market_price = rest_api.get_latest_bar(symbol).c
@@ -139,3 +140,11 @@ def construct_market_order(symbol,allocation,order_side='',prec=3):
         )
     
     return market_order, target_holding
+
+def check_sys_mode():
+    #   TODO: Implement change of API keys per mode 
+    if SYSTEM_MODE == 'PAPER':
+        pass
+    elif SYSTEM_MODE == 'LIVE':
+        pass
+    return SYSTEM_MODE

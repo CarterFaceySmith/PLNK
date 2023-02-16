@@ -14,7 +14,8 @@ def menu():
 
 def main():
     print("Welcome.")
-    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Exit\n")
+    print(f'System mode: {config.SYSTEM_MODE}\n')
+    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n")
 
     match mode:
         case "1":
@@ -45,7 +46,7 @@ def main():
 
             confirmation = input("Confirm rebalance? (y/n)")
             if confirmation == 'y':
-                rebalance.rebalance(portfolio, prec)
+                rebalance.perform_rebalance(portfolio, prec)
             else:
                 menu()
 
@@ -57,10 +58,26 @@ def main():
 
         case '4':
             config.get_portfolio_stats()
-
             menu()
 
         case '5':
+            config.API_KEY = input("Enter your new API primary key: \n")
+            config.SECRET_KEY = input("Enter your new API secret key: \n")
+            menu()
+
+        case '6':
+            print(f'Current system mode: {config.SYSTEM_MODE}\n')
+            mode_pick = input("Choose new system mode (defaults to paper):\n\t1. Paper\n\t2. Live\n")
+            match mode_pick:
+                case '1':
+                    config.SYSTEM_MODE = 'PAPER'
+                case '2':
+                    config.SYSTEM_MODE = 'LIVE'
+                case _:
+                    raise ValueError("Invalid input")
+            menu()
+
+        case '7':
             print("Goodbye.")
             exit(0)
 
