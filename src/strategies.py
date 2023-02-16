@@ -23,11 +23,8 @@ class Rebalance(bt.Strategy):
         profit = round(self.broker.getvalue() - self.start_cash,2)
         print(f'Profit: {profit:,.2f}\nPortfolio:')
         for item in self.init_params: 
-            if re.match(r'[A-Z]{6}', item):
+            if re.match(r'[A-Z]{3,6}', item):
                 print(f'\t{item}:\t{self.init_params[item]}')
-
-            # if re.match(r'[A-Z]{6}', item): 
-            #     print(f'\t{item}:\t{self.init_params[item]}')
 
     def next(self):
         match self.params.frequency:
@@ -43,7 +40,67 @@ class Rebalance(bt.Strategy):
 
         for i,d in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
-            if re.match(r'[A-Z]{6}', d._name):
+            if re.match(r'[A-Z]{3,6}', d._name):
+                symbol = d._name
+                allocation = self.params._get(symbol)
+                self.order_target_percent(symbol, self.params._get(symbol))
+            # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
+
+class RebalanceAndAdd(bt.Strategy):
+    params = (
+        ('frequency',''),
+        ('monthly_cash',1000.0),
+    )
+
+    def __init__(self, params=None):
+        if params != None:
+            for name, val in params.items(): 
+                setattr(self.params, name, val)
+        self.init_params = params
+        self.month_last_rebalanced = -1 
+        self.year_last_rebalanced = -1
+        self.day_last_rebalanced = -1
+        self.start_cash = self.broker.getvalue()
+
+    def start(self):
+        self.val_start = 100.0
+
+        # Add a timer which will be called on the 1st trading day of the month
+        self.add_timer(
+            bt.timer.SESSION_END,  # when it will be called
+            monthdays=[1],  # called on the 1st day of the month
+            monthcarry=True,  # called on the 2nd day if the 1st is holiday
+        )
+
+    def notify_timer(self, timer, when, *args, **kwargs):
+        # Add the influx of monthly cash to the broker
+        self.broker.add_cash(self.p.monthly_cash)
+
+        # buy available cash
+        target_value = self.broker.get_value() + self.p.monthly_cash
+        self.order_target_value(target=target_value)
+
+    def stop(self):
+        self.roi = (self.broker.get_value() - self.cash_start) - 1.0
+        self.froi = self.broker.get_fundvalue() - self.val_start
+        print('ROI:        {:.2f}%'.format(self.roi))
+        print('Fund Value: {:.2f}%'.format(self.froi))
+
+    def next(self):
+        match self.params.frequency:
+            case 'yearly':
+                if (self.datetime.date().year == self.year_last_rebalanced):
+                    return
+                self.year_last_rebalanced = self.datetime.date().year
+            case 'monthly':
+                if (self.datetime.date().year == self.year_last_rebalanced) and (self.datetime.date().month == self.month_last_rebalanced):
+                    return
+                self.year_last_rebalanced = self.datetime.date().year
+                self.month_last_rebalanced = self.datetime.date().month
+
+        for i,d in enumerate(self.datas):
+            # NOTE: i = count, d = datafeed instance in self.datas
+            if re.match(r'[A-Z]{3,6}', d._name):
                 symbol = d._name
                 allocation = self.params._get(symbol)
                 self.order_target_percent(symbol, self.params._get(symbol))
@@ -78,7 +135,7 @@ class ETHScalping(bt.Strategy):
         print(f'Profit: {profit}\nSMA Period: {self.params.sma_period}\nBuy Threshold: {self.params.buy_threshold}\nSell Threshold: {self.params.sell_threshold}\n')
 
 # Utilities
-strategy_dict = {'Rebalance': Rebalance, 'Ethereum Scalping': ETHScalping}
+strategy_dict = {'Rebalance': Rebalance, 'RebalanceAndAdd': RebalanceAndAdd, 'Ethereum Scalping': ETHScalping}
 strategy_list = list(strategy_dict.keys())
 
 # Lists the available strategies

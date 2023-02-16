@@ -1,7 +1,7 @@
 import backtrader as bt
 from alpaca.data.timeframe import TimeFrame
 from src import config, strategies
-import datetime, collections, re
+import datetime, collections
 from dateutil.relativedelta import relativedelta
 import numpy as np
 collections.Iterable = collections.abc.Iterable
@@ -15,37 +15,17 @@ def bt_opt_init(mode=''):
 
     if mode == 'BACKTEST':
         for param in strategy.params._getkeys():
-            strat_params[param] = input(f"input the value of the '{param}' parameter: ")
+            strat_params[param] = input(f"Input the value of the '{param}' parameter: ")
 
-        tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
-        allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-        target_allocations = [float(x) for x in allocation_input]
-        for val in target_allocations:
-            if val < 0:
-                raise ValueError("Target allocations must be positive")
-            elif val > 1:
-                raise ValueError("Target allocations must be less than 1.0")
-
-        if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-            raise ValueError("The sum of your allocations must be between 0 and 1")
+        tickers, target_allocations = config.input_portfolio()
 
         for ticker in tickers:
-            if len(ticker) > 4:
-                raise ValueError(f"Tickers must be 4 characters or less, {ticker} is invalid")
-            else:
+            if config.validate_ticker(ticker):
                 strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
-
-        user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-        user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
-        comm = float(input("Enter the per-trade commission fee (e.g. 0.1): "))
-
-        if user_end < user_start:
-            raise ValueError("End date must be after the start date")
-        
-        cash = int(input("Enter the starting cash amount: "))
-        plot_input = input("Would you like to plot the results? (y/n): ")
-        plot = True if plot_input == 'y' else False
+        user_start, user_end = config.input_valid_dates()
+        comm, cash = config.input_comm_cash()
+        plot = config.input_plotting()
         
         backtest(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
     
@@ -53,48 +33,29 @@ def bt_opt_init(mode=''):
         for param in strategy.params._getkeys():
             opt_param = input(f"Would you like to optimise the '{param}' parameter? (y/n): ")
             if opt_param == 'y':
-                lower = int(input(f"input the lower bound of the '{param}' parameter: "))
-                upper = int(input(f"input the upper bound of the '{param}' parameter: "))
-                step = int(input(f"input the step size of the '{param}' parameter: "))
+                lower = int(input(f"Input the lower bound of the '{param}' parameter: "))
+                upper = int(input(f"Input the upper bound of the '{param}' parameter: "))
+                step = int(input(f"Input the step size of the '{param}' parameter: "))
                 strat_params[param] = np.linspace(lower, upper, step)
             else:
-                strat_params[param] = input(f"input the value of the '{param}' parameter: ")
+                strat_params[param] = input(f"Input the value of the '{param}' parameter: ")
 
-        tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
-        allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-        target_allocations = [float(x) for x in allocation_input]
-        for val in target_allocations:
-            if val < 0:
-                raise ValueError("Target allocations must be positive")
-            elif val > 1:
-                raise ValueError("Target allocations must be less than 1.0")
-
-        if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-            raise ValueError("The sum of your allocations must be between 0 and 1")
+        tickers, target_allocations = config.input_portfolio()
 
         for ticker in tickers:
-            if re.match(r'[A-Z]{6}', ticker):
-                raise ValueError(f"{ticker} is invalid")
-            else:
+            if config.validate_ticker(ticker):
                 opt_ticker = input(f"Would you like to optimise the '{ticker}' allocation? (y/n): ")
                 if opt_ticker == 'y':
-                    lower = int(input(f"input the lower bound of the '{ticker}' allocation: "))
-                    upper = int(input(f"input the upper bound of the '{ticker}' allocation: "))
-                    step = int(input(f"input the step size of the '{ticker}' allocation: "))
+                    lower = int(input(f"Input the lower bound of the '{ticker}' allocation: "))
+                    upper = int(input(f"Input the upper bound of the '{ticker}' allocation: "))
+                    step = int(input(f"Input the step size of the '{ticker}' allocation: "))
                     strat_params[ticker] = np.linspace(lower, upper, step)
                 else:
                     strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
-        user_start = input("Enter a start date for backtesting (format: yyyy-mm-dd): ")
-        user_end = input("Enter an end date for backtesting (format: yyyy-mm-dd): ")
-        comm = float(input("Enter the per-trade commission fee (e.g. 0.1): "))
-
-        if user_end < user_start:
-            raise ValueError("End date must be after the start date")
-        
-        cash = int(input("Enter the starting cash amount: "))
-        plot_input = input("Would you like to plot the results? (y/n): ")
-        plot = True if plot_input == 'y' else False
+        user_start, user_end = config.input_valid_dates()
+        comm, cash = config.input_comm_cash()
+        plot = config.input_plotting()
         
         optimise(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
 

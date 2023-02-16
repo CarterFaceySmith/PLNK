@@ -10,8 +10,11 @@ The perform_rebalance function intakes:
     Parameter 2: An integer to set the decimal precision of the orders
 '''
 def perform_rebalance(desired_allocations, precision=3):
+    print('Closing all positions')
     rest_api.close_all_positions()
+    print('Cancelling all open orders')
     rest_api.cancel_all_orders()
+    print('Beginning rebalance')
 
     available_cash = float(rest_api.get_account().cash)
 
@@ -19,26 +22,9 @@ def perform_rebalance(desired_allocations, precision=3):
 
     # Rebalance
     for symbol, dollars_alloc in dollar_value_allocations.items():
-        if symbol in config.crypto:
-            time_in_force = TimeInForce.GTC
-        else:
-            time_in_force = TimeInForce.DAY
-
-        if symbol in config.crypto:
-            market_price = rest_api.get_latest_crypto_bar(symbol, exchange='FTXU').c
-        else:
-            market_price = rest_api.get_latest_bar(symbol).c
-
-        target_holdings = round(dollars_alloc / market_price, precision)
-
-        market_order_data = MarketOrderRequest(
-            symbol=symbol,
-            qty=target_holdings,
-            side=OrderSide.BUY,
-            time_in_force=time_in_force
-        )
-
-        print(f"Submitting market order for {target_holdings} units of {symbol}")
+        market_order_data, qty = config.construct_market_order(symbol, dollars_alloc, 'BUY', precision)
+        
+        print(f"Submitting market order for {qty} units of {symbol}")
         market_order = trading_client.submit_order(
                         order_data=market_order_data
                         )
