@@ -37,8 +37,8 @@ def get_historic_data(symbol, rest_api, timeframe, start, end):
 def liquidate_portfolio():
     print('Liquidating portfolio...')
     print(f'Starting cash: {float(rest_api.get_account().cash)}')
-    rest_api.close_all_positions()
     rest_api.cancel_all_orders()
+    rest_api.close_all_positions()
     print('Portfolio liquidated.')
     print(f'Ending cash: {float(rest_api.get_account().cash)}')
 
@@ -123,7 +123,6 @@ def construct_market_order(symbol,allocation,order_side='',prec=3):
         time_in_force = TimeInForce.DAY # Can be changed
         market_price = rest_api.get_latest_bar(symbol).c
     
-    print(f'{allocation}\t{market_price}\t{prec}')
     target_holding = round(allocation / market_price, prec)
 
     if order_side == 'SELL':
