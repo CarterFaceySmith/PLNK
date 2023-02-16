@@ -36,11 +36,11 @@ def get_historic_data(symbol, rest_api, timeframe, start, end):
 
 def liquidate_portfolio():
     print('Liquidating portfolio...')
-    print(f'Starting cash: {float(rest_api.get_account().cash)}')
+    print(f'Starting cash: {float(rest_api.get_account().cash):,.2f}')
     rest_api.cancel_all_orders()
     rest_api.close_all_positions()
     print('Portfolio liquidated.')
-    print(f'Ending cash: {float(rest_api.get_account().cash)}')
+    print(f'Ending cash: {float(rest_api.get_account().cash):,.2f}')
 
 def get_portfolio_stats():
     print("Stats:")
