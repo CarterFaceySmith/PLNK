@@ -123,6 +123,7 @@ def construct_market_order(symbol,allocation,order_side='',prec=3):
         time_in_force = TimeInForce.DAY # Can be changed
         market_price = rest_api.get_latest_bar(symbol).c
     
+    print(f'{allocation}\t{market_price}\t{prec}')
     target_holding = round(allocation / market_price, prec)
 
     if order_side == 'SELL':
