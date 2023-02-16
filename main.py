@@ -47,10 +47,11 @@ def main():
             confirmation = input("Confirm rebalance? (y/n)")
             if confirmation == 'y':
                 rebalance.perform_rebalance(portfolio, prec)
-            else:
-                menu()
+            
+            menu()
 
         case '3':
+            # TODO; Add validation of timing, cannot liquidate if markets are not open for some assets
             confirm = input("Confirm liquidation of portfolio positions? (y/n)")
             if confirm == 'y':
                 config.liquidate_portfolio()
