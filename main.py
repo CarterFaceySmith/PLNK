@@ -24,36 +24,25 @@ def main():
                 case "1":
                     backtesting.bt_opt_init(mode='BACKTEST')
                 case "2":
-                    backtesting.bt_opt_init(mode='OPTIMISE')
+                    # backtesting.bt_opt_init(mode='OPTIMISE')
+                    backtesting.test()
                 case _:
                     raise ValueError("Invalid input")
             menu()
                 
         case '2':
-            tickers = input("Enter the desired portfolio ticker(s) separated by commas: ").split(',')
-            allocation_input = input("Enter the target allocations for each ticker separated by commas (e.g. 0.3,0.2,0.5): ").split(',')
-            target_allocations = [float(x) for x in allocation_input]
-
-            if sum(target_allocations) > 1 or sum(target_allocations) < 0:
-                raise ValueError("The sum of your allocations must be between 0 and 1")
-
-            for ticker in tickers:
-                if not re.match(r'[A-Z]{3,6}', ticker):
-                    raise ValueError(f"{ticker} is invalid")
-                
+            tickers, target_allocations = config.input_portfolio()
             portfolio = dict(zip(tickers, target_allocations))
             prec = int(input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): "))
 
-            confirmation = input("Confirm rebalance? (y/n)")
-            if confirmation == 'y':
+            if input("Confirm rebalance? (y/n)") == 'y':
                 rebalance.perform_rebalance(portfolio, prec)
             
             menu()
 
         case '3':
             # TODO; Add validation of timing, cannot liquidate if markets are not open for some assets
-            confirm = input("Confirm liquidation of portfolio positions? (y/n)")
-            if confirm == 'y':
+            if input("Confirm liquidation of portfolio positions? (y/n)") == 'y':
                 config.liquidate_portfolio()
             menu()
 

@@ -1,7 +1,8 @@
 import backtrader as bt
-import re
+import re, numpy
 
 # NOTE: You cannot iterate over an instance of self.params in a strategy
+# NOTE: You need to convert to an integer or float if you want to use the value in pre-set params, this should be done in the strategy init, otherwise a string version is fed in from input() at line 18 or 38 of backtesting.py and the code will give a type error
 
 # Strategies
 class Rebalance(bt.Strategy):
@@ -81,7 +82,7 @@ class RebalanceAndAdd(bt.Strategy):
         self.order_target_value(target=target_value)
 
     def stop(self):
-        self.roi = (self.broker.get_value() - self.cash_start) - 1.0
+        self.roi = (self.broker.get_value() - self.start_cash) - 1.0
         self.froi = self.broker.get_fundvalue() - self.val_start
         print('ROI:        {:.2f}%'.format(self.roi))
         print('Fund Value: {:.2f}%'.format(self.froi))
@@ -110,13 +111,17 @@ class ETHScalping(bt.Strategy):
     params = (
         ("buy_threshold", 800),
         ("sell_threshold", 900),
-        ("sma_period", 50)
+        ("sma_period", 50),
     )
 
     def __init__(self, params=None):
         if params != None:
             for name, val in params.items(): 
-                setattr(self.params, name, val)
+                if isinstance(val, numpy.linspace):
+                    setattr(self.params, name, val)
+                else:
+                    setattr(self.params, name, int(val))
+                    
         self.sma = bt.indicators.SimpleMovingAverage(
             self.data.close, period=self.params.sma_period
         )
