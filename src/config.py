@@ -66,7 +66,7 @@ def validate_ticker(input=''):
     else: 
         raise ValueError(f'{input} is an invalid ticker')
     
-def validate_allocations(allocations):
+def validate_allocations(allocations=list[float]):
     for val in allocations:
             if (val < 0.0) or (val > 1.0):
                 raise ValueError("Target allocations must be between 0.0 and 1.0, {val} is an invalid input")
@@ -78,7 +78,7 @@ def validate_allocations(allocations):
         print(f'Your target allocations appear to be valid')
     
 def input_valid_dates():
-    curr_date = datetime.date.today()
+    curr_date = datetime.datetime.today()
     user_start = input("Enter a start date for testing (format: yyyy-mm-dd): ")
     user_end = input("Enter an end date for testing: (format: yyyy-mm-dd): ")
     val_start = datetime.datetime.strptime(user_start, "%Y-%m-%d")

@@ -16,6 +16,10 @@ def bt_opt_init(mode=''):
     if mode == 'BACKTEST':
         for param in strategy.params._getkeys():
             strat_params[param] = input(f"Input the value of the '{param}' parameter: ")
+            
+        # strat_params['buy_threshold'] = 800
+        # strat_params['sell_threshold'] = 900
+        # strat_params['sma_period'] = 50
 
         tickers, target_allocations = config.input_portfolio()
 
@@ -51,7 +55,9 @@ def bt_opt_init(mode=''):
                     step = int(input(f"Input the step size of the '{ticker}' allocation: "))
                     strat_params[ticker] = np.linspace(lower, upper, step)
                 else:
-                    strat_params[ticker] = target_allocations[tickers.index(ticker)]
+                    if ticker in strategy.params._getkeys():
+                        # NOTE: If the ticker is explicitly defined in the preset params then we set it, if not then it is passed over
+                        strat_params[ticker] = target_allocations[tickers.index(ticker)]
 
         user_start, user_end = config.input_valid_dates()
         comm, cash = config.input_comm_cash()
@@ -110,7 +116,7 @@ def backtest(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
         - A boolean switch for if you want to display a chart of results upon completion
 '''
 def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end="2023-02-01", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
-    cerebro = bt.Cerebro(stdstats=True)
+    cerebro = bt.Cerebro(stdstats=True, optreturn=False)
     cerebro.broker.setcash(cash)
     cerebro.optstrategy(strategy, **strat_params)
     
@@ -125,10 +131,27 @@ def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
     results = cerebro.run(maxcpus=1)
-    final_portfolio_value = cerebro.broker.getvalue()
-    print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
-    difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
-    print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
+
+    # Generate results list
+    # final_results_list = []
+    # for run in results:
+    #     for strategy in run:
+    #         value = round(strategy.broker.get_cash(),2)
+    #         PnL = round(value - cash,2)
+    #         final_results_list.append([PnL])
+
+    # #Sort Results List
+    # by_PnL = sorted(final_results_list, key=lambda x: x[0], reverse=True)
+
+    # #Print results
+    # print('Results - Ordered by Profit:')
+    # for result in by_PnL:
+    #     print('PnL: {}'.format(result[0]))
+
+    # final_portfolio_value = cerebro.broker.getvalue()
+    # print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
+    # difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
+    # print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
     if plotting:
         cerebro.plot()
 
@@ -143,8 +166,13 @@ def optimise(strategy, strat_params=None, symbols=list, start="2016-06-01", end=
 #                 }
 
 # E.g. strat_params['VOO'] = np.linspace(0,1,10)
-# NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats
-
+# NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats, note that the 'step' param of this is not the step size but the step number
+def test():
+    optimise(strategies.ETHScalping, {
+            "buy_threshold": np.linspace(700,800,5),
+            "sell_threshold": np.linspace(900,1000,5),
+            "sma_period": 40,
+        }, ['ETHUSD'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
 # optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
