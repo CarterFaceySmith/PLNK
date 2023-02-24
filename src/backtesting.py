@@ -76,7 +76,6 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     cerebro.addstrategy(strategy, strat_params)
-    # cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
     
     for symbol in symbols:
         alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
@@ -89,14 +88,7 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value}')
     results = cerebro.run(maxcpus=1)
-    final_portfolio_value = cerebro.broker.getvalue()
-    print(f'Final Portfolio Value: {final_portfolio_value:,.2f} ---> Return: {((final_portfolio_value/initial_portfolio_value - 1)*100):,.2f}%')
-    difference_in_years = relativedelta(datetime.datetime.strptime(end, "%Y-%m-%d"), datetime.datetime.strptime(start, "%Y-%m-%d")).years
-    print(f'Average Annualised Return: {(((final_portfolio_value/initial_portfolio_value - 1)*100)/difference_in_years):,.2f}%')
 
-    # strat = results[0]
-    # sharpe_rat = strat.analyzers.mysharpe.get_analysis()['sharperatio']
-    # print(f'Sharpe Ratio: {sharpe_rat:.2f}')
     if plotting:
         cerebro.plot()
 
@@ -143,27 +135,28 @@ def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
 
 # E.g. strat_params['VOO'] = np.linspace(0,1,10)
 # NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats, note that the 'step' param of this is not the step size but the step number
+# NOTE: For other numbers range is the better choice, for example sma_period can cause complications if a linspace is used
 def test():
-    optimise(strategies.ETHScalping, {
-            "buy_threshold": np.linspace(700,800,3),
-            "sell_threshold": np.linspace(900,1000,3),
-            "sma_period": 40,
-        }, ['ETHUSD'], '2015-06-01', '2023-02-10', TimeFrame.Day, 10000, 0.0, False)
+    # optimise(strategies.ETHScalping, {
+    #         "buy_threshold": np.linspace(500,600,3),
+    #         "sell_threshold": np.linspace(900,1000,3),
+    #         "sma_period": range(10,20)
+    #     }, ['ETHUSD'], '2015-06-01', '2023-02-10', TimeFrame.Day, 10000, 0.0, False)
 
-    # params = {
-    #     'frequency': 'monthly',
-    #     'weights': {
-    #         'MSFT': np.linspace(0.5,0.6,3),
-    #         'AAPL': 0.3,
-    #     },
-    # }
+    params = {
+        'frequency': 'monthly',
+        'weights': {
+            'MSFT': np.linspace(0.5,0.6,3),
+            'AAPL': 0.3,
+        },
+    }
 
     # params = {
     #     'period': range(14,65),
     # }
 
     # optimise(strategies.SimpleSMA, params, ['ETHUSD'], '2015-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
-    # optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
+    optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
 # optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)

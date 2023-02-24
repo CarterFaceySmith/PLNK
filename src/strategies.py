@@ -41,6 +41,7 @@ class Rebalance(bt.Strategy):
         for index, datafeed in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
             symbol = datafeed._name
+            # print(f'{self.params.weights}\t{type(self.params.weights)}')
             self.order_target_percent(datafeed, target=self.params.weights[symbol])
             # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
 
