@@ -7,7 +7,7 @@ import re, numpy
 # Strategies
 class Rebalance(bt.Strategy):
     params = (
-        ('frequency',''),
+        ('frequency','monthly'),
         ('weights',{}),
     )
 
@@ -38,15 +38,14 @@ class Rebalance(bt.Strategy):
                 self.year_last_rebalanced = self.datetime.date().year
                 self.month_last_rebalanced = self.datetime.date().month
 
-        for index, datafeed in enumerate(self.datas):
+        for i, d in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
-            symbol = datafeed._name
-            # print(f'{self.params.weights}\t{type(self.params.weights)}')
-            self.order_target_percent(datafeed, target=self.params.weights[symbol])
+            symbol = d._name
+            self.order_target_percent(d, target=self.params.weights[symbol])
             # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
 
-    def stop(self):
-        self.log(f'Weights: {self.params.weights}\tFrequency: {self.params.frequency}\tProfit: {self.broker.getvalue() - self.start_cash:,.2f}', doprint=True)
+    # def stop(self):
+    #     self.log(f'Weights: {self.params.weights}\tFrequency: {self.params.frequency}\tProfit: {self.broker.getvalue() - self.start_cash:,.2f}', doprint=True)
 
 class RebalanceAndAdd(bt.Strategy):
     params = dict(

@@ -14,7 +14,6 @@ class NetPayOutData(bt.feeds.GenericCSVData):
         openinterest=-1,  # -1 indicates there is no openinterest field
     )
 
-
 class St(bt.Strategy):
     params = dict(
         selcperc=0.10,  # percentage of stocks to select from the universe

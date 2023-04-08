@@ -1,5 +1,4 @@
 from src import config, rebalance, backtesting
-import re
 
 def menu():
     choice = input('1. Main menu\n2. Exit\n')
