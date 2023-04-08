@@ -14,8 +14,8 @@ def bt_opt_init(mode=''):
     strat_params = {}
 
     if mode == 'BACKTEST':
-        for param in strategy.params._getkeys():
-            strat_params[param] = input(f"Input the value of the '{param}' parameter: ")
+        # for param in strategy.params._getkeys():
+        #     strat_params[param] = input(f"Input the value of the '{param}' parameter: ")
 
         tickers, target_allocations = config.input_portfolio()
 
@@ -135,7 +135,7 @@ def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
 
 # E.g. strat_params['VOO'] = np.linspace(0,1,10)
 # NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats, note that the 'step' param of this is not the step size but the step number
-# NOTE: For other numbers range is the better choice, for example sma_period can cause complications if a linspace is used
+# NOTE: For other numbers range() is the better choice, for example sma_period can cause complications if a linspace is used
 def test():
     # optimise(strategies.ETHScalping, {
     #         "buy_threshold": np.linspace(500,600,3),
@@ -143,20 +143,20 @@ def test():
     #         "sma_period": range(10,20)
     #     }, ['ETHUSD'], '2015-06-01', '2023-02-10', TimeFrame.Day, 10000, 0.0, False)
 
-    params = {
-        'frequency': 'monthly',
-        'weights': {
-            'MSFT': np.linspace(0.5,0.6,3),
-            'AAPL': 0.3,
-        },
-    }
+    # strat_params = {
+    #     'frequency': 'monthly',
+    #     'weights': {
+    #         'MSFT': 0.3,
+    #         'AAPL': 0.3,
+    #     },
+    # }
 
     # params = {
     #     'period': range(14,65),
     # }
 
     # optimise(strategies.SimpleSMA, params, ['ETHUSD'], '2015-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
-    optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
+    # optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
 # optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
