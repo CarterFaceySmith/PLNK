@@ -4,6 +4,7 @@ from src import config, strategies
 import datetime, collections
 from dateutil.relativedelta import relativedelta
 import numpy as np
+import yfinance as yf
 collections.Iterable = collections.abc.Iterable
 
 rest_api = config.rest_api
@@ -75,10 +76,12 @@ def bt_opt_init(mode=''):
 def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end="2023-02-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
+    # dict(**eval('dict(' + strat_params + ')'))
     cerebro.addstrategy(strategy, strat_params)
     
     for symbol in symbols:
-        alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
+        # alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
+        alpaca_data = yf.download(symbol, start='2000-01-01', end='2023-08-10')
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
         print(f'Added {symbol} data to cerebro instance\n')
@@ -86,8 +89,13 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
 
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
-    print(f'Starting Portfolio Value: {initial_portfolio_value}')
+    print(f'Starting Portfolio Value: ${initial_portfolio_value}:,.2f')
     results = cerebro.run(maxcpus=1)
+    print(f'Final Portfolio Value: ${cerebro.broker.getvalue():,.2f}')
+    print(f'Total Profit: ${cerebro.broker.getvalue() - initial_portfolio_value:,.2f}')
+    years = relativedelta(datetime.datetime.strptime(end, '%Y-%m-%d'), datetime.datetime.strptime(start, '%Y-%m-%d')).years
+    print(f'Avg. Percent Return P.A: {(((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years:,.2f}%') 
+    print(f'Avg. Profit P.A: ${(cerebro.broker.getvalue() - initial_portfolio_value) / years:,.2f}')
 
     if plotting:
         cerebro.plot()
@@ -136,27 +144,27 @@ def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
 # E.g. strat_params['VOO'] = np.linspace(0,1,10)
 # NOTE: To feed a decimal point range into optimise for some parameter a numpy linspace must be used as above to avoid potential rounding errors, the standard range() function does't fucking work for floats, note that the 'step' param of this is not the step size but the step number
 # NOTE: For other numbers range() is the better choice, for example sma_period can cause complications if a linspace is used
-def test():
-    # optimise(strategies.ETHScalping, {
-    #         "buy_threshold": np.linspace(500,600,3),
-    #         "sell_threshold": np.linspace(900,1000,3),
-    #         "sma_period": range(10,20)
-    #     }, ['ETHUSD'], '2015-06-01', '2023-02-10', TimeFrame.Day, 10000, 0.0, False)
+# def test():
+#     # optimise(strategies.ETHScalping, {
+#     #         "buy_threshold": np.linspace(500,600,3),
+#     #         "sell_threshold": np.linspace(900,1000,3),
+#     #         "sma_period": range(10,20)
+#     #     }, ['ETHUSD'], '2015-06-01', '2023-02-10', TimeFrame.Day, 10000, 0.0, False)
 
-    # strat_params = {
-    #     'frequency': 'monthly',
-    #     'weights': {
-    #         'MSFT': 0.3,
-    #         'AAPL': 0.3,
-    #     },
-    # }
+#     strat_params = {
+#         'frequency': 'monthly',
+#         'weights': {
+#             'MSFT': 0.3,
+#             'AAPL': 0.3,
+#         },
+#     }
 
-    # params = {
-    #     'period': range(14,65),
-    # }
+#     # params = {
+#     #     'period': range(14,65),
+#     # }
 
-    # optimise(strategies.SimpleSMA, params, ['ETHUSD'], '2015-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
-    # optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
-# optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
-# backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
-# backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+#     # optimise(strategies.SimpleSMA, params, ['ETHUSD'], '2015-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
+#     # optimise(strategies.Rebalance, params, ['MSFT', 'AAPL'], '2020-01-01', '2023-01-01', TimeFrame.Day, 10000, 0.0, False)
+# # optimise(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+#     backtest(strategies.Rebalance, strat_params, ['MSFT','AAPL'], user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+# # backtest(strategies.ETHScalping, strat_params, tickers, user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
