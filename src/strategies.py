@@ -16,10 +16,9 @@ class Rebalance(bt.Strategy):
             for name, val in params.items(): 
                 setattr(self.params, name, val)
 
-    def log(self, txt, dt=None, doprint=False):
-        if self.params.printlog or doprint:
-            dt = dt or self.datas[0].datetime.date(0)
-            print('%s, %s' % (dt.isoformat(), txt))
+    def log(self, txt, dt=None):
+        dt = dt or self.datas[0].datetime.date(0)
+        print('%s, %s' % (dt.isoformat(), txt))
 
     def start(self):
         self.month_last_rebalanced = -1
@@ -41,7 +40,7 @@ class Rebalance(bt.Strategy):
         for i, d in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
             symbol = d._name
-            self.order_target_percent(d, target=self.params.weights[symbol])
+            order = self.order_target_percent(d, target=self.params.weights[symbol])
             # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
 
     # def stop(self):
