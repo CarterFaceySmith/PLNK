@@ -85,11 +85,11 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
         print(f'Added {symbol} data to cerebro instance\n')
-        print(f"{alpaca_data.head(3)}\n")
+        print(f"{alpaca_data.head(1)}\n")
 
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
-    print(f'Starting Portfolio Value: ${initial_portfolio_value}:,.2f')
+    print(f'Starting Portfolio Value: ${initial_portfolio_value:,.2f}')
     results = cerebro.run(maxcpus=1)
     print(f'Final Portfolio Value: ${cerebro.broker.getvalue():,.2f}')
     print(f'Total Profit: ${cerebro.broker.getvalue() - initial_portfolio_value:,.2f}')
