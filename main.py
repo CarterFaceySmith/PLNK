@@ -1,4 +1,4 @@
-from src import config, rebalance, backtesting
+from src import config, rebalance, backtesting, testing
 
 def menu():
     choice = input('1. Main menu\n2. Exit\n')
@@ -14,7 +14,7 @@ def menu():
 def main():
     print("Welcome.")
     print(f'System mode: {config.SYSTEM_MODE}\n')
-    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n")
+    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n\t8. Testing\n")
 
     match mode:
         case "1":
@@ -23,8 +23,7 @@ def main():
                 case "1":
                     backtesting.bt_opt_init(mode='BACKTEST')
                 case "2":
-                    # backtesting.bt_opt_init(mode='OPTIMISE')
-                    backtesting.test()
+                    backtesting.bt_opt_init(mode='OPTIMISE')
                 case _:
                     raise ValueError("Invalid input")
             menu()
@@ -69,6 +68,9 @@ def main():
         case '7':
             print("Goodbye.")
             exit(0)
+
+        case '8':
+            testing.test()
 
         case _:
             raise BaseException("Invalid input or crash")

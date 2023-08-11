@@ -17,7 +17,7 @@ rest_api = REST(API_KEY, SECRET_KEY, 'https://paper-api.alpaca.markets')
 crypto_client = CryptoHistoricalDataClient()
 stock_client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
 
-#Functions
+# Functions
 def return_clients():
     return trading_client,rest_api,crypto_client,stock_client
 
