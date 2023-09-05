@@ -73,7 +73,7 @@ def bt_opt_init(mode=''):
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end="2023-02-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
+def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     # dict(**eval('dict(' + strat_params + ')'))
@@ -81,7 +81,7 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
     
     for symbol in symbols:
         # alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
-        alpaca_data = yf.download(symbol, start='2000-01-01', end='2023-08-10')
+        alpaca_data = yf.download(symbol, start=start, end=end)
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
         print(f'Added {symbol} data to cerebro instance\n')
@@ -90,15 +90,14 @@ def backtest(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: ${initial_portfolio_value:,.2f}')
-    results = cerebro.run(maxcpus=1)
+    results = cerebro.run()
     print(f'Final Portfolio Value: ${cerebro.broker.getvalue():,.2f}')
     print(f'Total Profit: ${cerebro.broker.getvalue() - initial_portfolio_value:,.2f}')
     years = relativedelta(datetime.datetime.strptime(end, '%Y-%m-%d'), datetime.datetime.strptime(start, '%Y-%m-%d')).years
     print(f'Avg. Percent Return P.A: {(((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years:,.2f}%') 
     print(f'Avg. Profit P.A: ${(cerebro.broker.getvalue() - initial_portfolio_value) / years:,.2f}')
 
-    if plotting:
-        cerebro.plot()
+    if plotting: cerebro.plot()
 
 '''
     Optimise function intakes:

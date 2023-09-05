@@ -36,15 +36,12 @@ class Rebalance(bt.Strategy):
                     return
                 self.year_last_rebalanced = self.datetime.date().year
                 self.month_last_rebalanced = self.datetime.date().month
-
+        
         for i, d in enumerate(self.datas):
             # NOTE: i = count, d = datafeed instance in self.datas
             symbol = d._name
-            order = self.order_target_percent(d, target=self.params.weights[symbol])
+            self.order_target_percent(d, target=self.params.weights[symbol])
             # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
-
-    # def stop(self):
-    #     self.log(f'Weights: {self.params.weights}\tFrequency: {self.params.frequency}\tProfit: {self.broker.getvalue() - self.start_cash:,.2f}', doprint=True)
 
 class RebalanceAndAdd(bt.Strategy):
     params = dict(
@@ -152,11 +149,8 @@ strategy_list = list(strategy_dict.keys())
 
 # Lists the available strategies
 def list_strats():
-    i = 1
-    for name in strategy_dict:
-        print(f'\t{i}: {name}')
-        i += 1
-    print()
+    for index, name in enumerate(strategy_dict):
+        print(f'\t{index}: {name}')
 
 # Lists the available strategies and returns the selected strategy object
 def select_strat():
