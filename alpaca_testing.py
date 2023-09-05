@@ -54,13 +54,15 @@ class RebalanceStrategy(bt.Strategy):
             target_value = total_value * weights[i]
             current_value = self.broker.getposition(d).size * d.close[0]
             difference = target_value - current_value
+            order_size = difference / d.close[0] - self.broker.getposition(d).size
 
-            if difference > 0:
-                self.buy(data=d, size=difference / d.close[0])
+            if order_size > 0:
+                self.buy(data=d, size=order_size)
                 self.log('BUY CREATE, %s: %.2f' % (d._name, d.close[0]))
-            elif difference < 0:
-                self.sell(data=d, size=-difference / d.close[0])
+            elif order_size < 0:
+                self.sell(data=d, size=-order_size)
                 self.log('SELL CREATE, %s: %.2f' % (d._name, d.close[0]))
+
 
 if __name__ == '__main__':
     cerebro = bt.Cerebro()
@@ -70,7 +72,7 @@ if __name__ == '__main__':
     # Add the stocks
     symbols = ['MSFT', 'BTC-USD']
     for symbol in symbols:
-        data_df = yf.download(symbol, start='2022-01-01', end='2023-08-01')
+        data_df = yf.download(symbol, start='2010-01-01', end='2023-08-01')
         data = btfeeds.PandasData(dataname=data_df)
         cerebro.adddata(data)
 

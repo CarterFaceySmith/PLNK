@@ -16,11 +16,8 @@ def test():
         },
     }
 
-    params = {
-    }
-
     user_start = "2010-01-01"
-    user_end = "2023-08-01"
+    user_end = "2023-09-01"
 
     backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
 
