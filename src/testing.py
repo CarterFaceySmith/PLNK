@@ -10,9 +10,9 @@ def test():
             'AAPL': 0.05,
             'GOOG': 0.075,
             'VOO': 0.4,
-            'VOOG': 0.2,
-            'BTC-USD': 0.125,
-            'ETH-USD': 0.075,
+            'VOOG': 0.15,
+            'BTC-USD': 0.225,
+            'ETH-USD': 0.15,
         },
     }
 

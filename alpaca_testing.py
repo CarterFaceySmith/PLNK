@@ -3,86 +3,133 @@ import backtrader.feeds as btfeeds
 import backtrader as bt
 from datetime import datetime
 import numpy as np
+import pandas as pd
+import itertools
+from src import config
 
-class RebalanceStrategy(bt.Strategy):
-    params = (('rebalance_days', 90), ('threshold', 0.05))
+class Rebalance(bt.Strategy):
+    params = (
+        ('weights', {
+            'MSFT': 0.05,
+            'AAPL': 0.05,
+            'GOOG': 0.05,
+            'VOO': 0.40,
+            'VOOG': 0.15,
+            'BTC-USD': 0.20,
+            'ETH-USD': 0.10,
+        }),
+    )
 
-    def __init__(self):
-        self.counter = 0
-        self.values = np.zeros(len(self.datas))
+    def __init__(self, params=None):
+        if params != None:
+            for name, val in params.items(): 
+                setattr(self.params, name, val)
 
     def log(self, txt, dt=None):
-        ''' Logging function for this strategy'''
         dt = dt or self.datas[0].datetime.date(0)
         print('%s, %s' % (dt.isoformat(), txt))
 
+    def start(self):
+        self.month_last_rebalanced = -1
+        self.year_last_rebalanced = -1
+        self.start_cash = self.broker.getvalue()
+
     def next(self):
-        self.counter += 1
-
-        # Log the closing prices of the series from the reference
-        if self.counter % 30 == 0:  # Log every 30 days
-            for i, d in enumerate(self.datas):
-                self.log('Close, %s: %.2f' % (d._name, d.close[0]))
-
-        # Rebalance if the portfolio deviates from the target allocation by a certain threshold
-        if self.counter % self.params.rebalance_days == 0 or self.check_threshold():
-            self.rebalance_portfolio()
-
-    def check_threshold(self):
-        total_value = self.broker.getvalue()
-        target_value = total_value / len(self.datas)
-
-        for i, d in enumerate(self.datas):
-            current_value = self.broker.getposition(d).size * d.close[0]
-            if abs(current_value - target_value) / target_value > self.params.threshold:
-                return True
-
-        return False
-
-    def rebalance_portfolio(self):
-        # Rebalance based on volatility
-        total_value = self.broker.getvalue()
-        volatilities = np.array([np.std(d.close.get(size=self.params.rebalance_days)) for d in self.datas])
-
-        # Add a small constant to avoid division by zero
-        volatilities += 1e-10
-
-        weights = 1 / volatilities
-        weights = weights / np.sum(weights)
-
-        for i, d in enumerate(self.datas):
-            target_value = total_value * weights[i]
-            current_value = self.broker.getposition(d).size * d.close[0]
-            difference = target_value - current_value
-            order_size = difference / d.close[0] - self.broker.getposition(d).size
-
-            if order_size > 0:
-                self.buy(data=d, size=order_size)
-                self.log('BUY CREATE, %s: %.2f' % (d._name, d.close[0]))
-            elif order_size < 0:
-                self.sell(data=d, size=-order_size)
-                self.log('SELL CREATE, %s: %.2f' % (d._name, d.close[0]))
-
+        if (self.datetime.date().year == self.year_last_rebalanced) and (self.datetime.date().month == self.month_last_rebalanced):
+            return
+        self.year_last_rebalanced = self.datetime.date().year
+        self.month_last_rebalanced = self.datetime.date().month
+        
+        for i, d in enumerate(self.params.weights):
+            # NOTE: i = count, d = datafeed instance in self.datas
+            self.order_target_percent(d, target=self.params.weights[d])
+            # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
 
 if __name__ == '__main__':
-    cerebro = bt.Cerebro()
+    # cerebro = bt.Cerebro()
 
-    cerebro.addstrategy(RebalanceStrategy)
+    # cerebro.addstrategy(Rebalance)
 
     # Add the stocks
-    symbols = ['MSFT', 'BTC-USD']
-    for symbol in symbols:
-        data_df = yf.download(symbol, start='2010-01-01', end='2023-08-01')
-        data = btfeeds.PandasData(dataname=data_df)
-        cerebro.adddata(data)
+    symbols = ['MSFT', 'AAPL', 'ETH-USD', 'GOOG', 'VOO', 'VOOG', 'BTC-USD']
 
-    cerebro.broker.setcash(100000.0)
+    start_date = '2010-01-01'
+    end_date = '2023-09-01'
 
-    # Set the commission - $2 per trade
-    cerebro.broker.setcommission(commission=2.0)
+    # Load the CSV data for each financial asset
+    assets = ['VOO', 'VOOG', 'BTC-USD', 'ETH-USD']
 
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    data = {}
+    for asset in assets:
+        data[asset] = pd.read_csv(f"{asset}_financial_data.csv", parse_dates=True)
 
-    cerebro.run()
+    # Define the range of percentage allocations in 5% increments
+    allocation_range = range(0, 101, 10)
 
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    # Initialize variables to track the best combination
+    best_allocation = None
+    best_returns = -float('inf')
+
+    # Define the initial portfolio value and monthly contribution
+    initial_portfolio_value = 1000  # Replace with your desired initial investment
+    monthly_contribution = 100  # Replace with your desired monthly contribution
+
+    # Iterate through all possible combinations of allocations
+    for allocation_combination in itertools.product(allocation_range, repeat=len(assets)):
+        total_allocation = sum(allocation_combination)
+        if total_allocation != 100:
+            continue  # Skip combinations that don't add up to 100%
+
+        portfolio_value = initial_portfolio_value
+        portfolio_returns = []
+
+        print(f'\tRunning allocation: {allocation_combination}')
+
+        for year in range(2010, 2024):  # Adjust the range as needed
+            for month in range(1, 13):
+                # Calculate the current month's returns based on allocation
+                month_returns = 0.0
+                for i, asset in enumerate(assets):
+                    allocation_percentage = allocation_combination[i] / 100
+                    asset_data = data[asset]
+                    returns = (asset_data['Adj Close'] / asset_data['Adj Close'].shift(1) - 1).fillna(0)
+                    weighted_returns = allocation_percentage * returns
+                    # Check if there are remaining funds to invest in this asset
+                    if portfolio_value > 0:
+                        month_returns += weighted_returns.mean()
+                
+                # Calculate the monthly portfolio value
+                portfolio_value += monthly_contribution
+                portfolio_value *= (1 + month_returns)
+                portfolio_returns.append(portfolio_value)
+
+       # Calculate the annualized returns
+        final_portfolio_value = portfolio_returns[-1]
+        years = len(portfolio_returns) / 12  # Calculate the number of years
+        annualized_returns = (((final_portfolio_value / initial_portfolio_value) ** (1 / years)) - 1) * 100
+        print(f'\tAnnualized returns: {annualized_returns:.4f}%')
+        print(f'\tTotal gain: ${final_portfolio_value - initial_portfolio_value:,.4f}')
+        print(f'\tYearly gain: ${(final_portfolio_value - initial_portfolio_value) / years:,.4f}\n')
+
+        # Check if this combination yields the highest returns
+        if annualized_returns > best_returns:
+            best_returns = annualized_returns
+            best_allocation = allocation_combination
+
+    # Print the best combination of allocations and the corresponding annualized returns
+    print("Best Allocation:", best_allocation)
+    print("Best Annualized Returns:", best_returns)
+
+
+    # for symbol in symbols:
+        # cerebro.adddata(config.csv_to_df(symbol))
+
+    # cerebro.broker.setcash(50000.0)
+    # cerebro.broker.setcommission(commission=2.0)
+
+    # print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
+
+    # cerebro.run()
+
+    # print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+
