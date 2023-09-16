@@ -1,4 +1,5 @@
 from src import config, rebalance, backtesting, testing
+from alpaca.trading.client import TradingClient
 
 def menu():
     choice = input('1. Main menu\n2. Exit\n')
@@ -14,7 +15,7 @@ def menu():
 def main():
     print("Welcome.")
     print(f'System mode: {config.SYSTEM_MODE}\n')
-    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n\t8. Testing\n")
+    mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n\t8. Testing\n\t9. ACTUAL REBALANCE\n")
 
     match mode:
         case "1":
@@ -31,10 +32,9 @@ def main():
         case '2':
             tickers, target_allocations = config.input_portfolio()
             portfolio = dict(zip(tickers, target_allocations))
-            prec = int(input("Enter the decimal precision of the rebalance (defaults to 3 if none entered): "))
 
             if input("Confirm rebalance? (y/n)") == 'y':
-                rebalance.perform_rebalance(portfolio, prec)
+                rebalance.perform_rebalance(portfolio)
             
             menu()
 
@@ -71,6 +71,14 @@ def main():
 
         case '8':
             testing.test()
+
+        case '9':
+            portfolio = {'VOO': 0.4, 'VOOG': 0.15, 'BTC-USD': 0.2, 'ETH-USD': 0.2}
+            if input("CONFIRM REBALANCE - THIS IS ACTUAL MONEY (YES/NO)") == 'YES':
+                    client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=False)
+                    rebalance.perform_rebalance(t_client=client, desired_allocations=portfolio)
+                    config.get_portfolio_stats()
+            menu()
 
         case _:
             raise BaseException("Invalid input or crash")

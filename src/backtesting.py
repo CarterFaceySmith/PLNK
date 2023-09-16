@@ -99,6 +99,8 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
 
     if plotting: cerebro.plot()
 
+    return cerebro.broker.getvalue()
+
 '''
     Optimise function intakes:
         - The strategy to test, an instance of a defined backtrader.strategy object
