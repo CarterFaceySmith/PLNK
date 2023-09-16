@@ -4,6 +4,10 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient
 import re, datetime
+import yfinance as yf
+import backtrader as bt
+import backtrader.feeds as btfeeds
+import pandas as pd
 
 # Settings
 SYSTEM_MODE = 'PAPER'
@@ -142,6 +146,15 @@ def construct_market_order(symbol,allocation,order_side='',prec=3):
         )
     
     return market_order, target_holding
+
+def download_to_csv(symbol, start='2010-01-01', end='2023-09-01'):
+    data_df = yf.download(symbol, start_date=start, end_date=end)
+    data_df.to_csv(f"{symbol}_financial_data.csv")
+
+def csv_to_df(symbol):
+    data_df = pd.read_csv(f"{symbol}_financial_data.csv", index_col='Date', parse_dates=True)
+    data = bt.feeds.PandasData(dataname=data_df)
+    return data
 
 def check_sys_mode():
     #   TODO: Implement change of API keys per mode 
