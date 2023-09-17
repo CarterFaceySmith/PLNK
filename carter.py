@@ -10,7 +10,7 @@ async def main():
     rebalance.perform_rebalance(t_client=client, desired_allocations=portfolio)
     await config.send_update_msg()
     await config.send_message(config.chat_id, "\n\n REBALANCE COMPLETE.")
-    exit(0)
+    exit()
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
