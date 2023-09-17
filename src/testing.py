@@ -1,3 +1,4 @@
+import asyncio
 from src import backtesting, strategies, config
 from alpaca.data.timeframe import TimeFrame
 import numpy as np
@@ -70,7 +71,9 @@ import itertools
 #     else:
 #         print("No valid total return found for any weight combination.")
 
-def test():
+
+
+async def test():
     strat_params = {
         'frequency': 'monthly',
         'weights': {
@@ -83,9 +86,15 @@ def test():
 
     user_start = "2010-01-01"
     user_end = "2023-09-01"
+    contents = config.return_portfolio_stats()
+    await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
+    exit()
 
-    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0, False)
+    # backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0, False)
 
     # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 100000)
 
     # backtesting.backtest(strategies.ETHScalping, params, ['ETHUSD'], user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(test())

@@ -1,5 +1,9 @@
+import asyncio
 from src import config, rebalance, backtesting, testing
 from alpaca.trading.client import TradingClient
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def menu():
     choice = input('1. Main menu\n2. Exit\n')
@@ -12,7 +16,7 @@ def menu():
         case _:
             raise ValueError('Invalid input')
 
-def main():
+async def main():
     print("Welcome.")
     print(f'System mode: {config.SYSTEM_MODE}\n')
     mode = input("What would you like to do?\n\t1. Backtest/Optimise\n\t2. Rebalance\n\t3. Liquidate portfolio\n\t4. Check stats\n\t5. Change API keys for this session\n\t6. Change system trading mode\n\t7. Exit\n\t8. Testing\n\t9. ACTUAL REBALANCE\n")
@@ -70,18 +74,20 @@ def main():
             exit(0)
 
         case '8':
-            testing.test()
+            await testing.test()
 
         case '9':
             portfolio = {'VOO': 0.4, 'VOOG': 0.15, 'BTC-USD': 0.2, 'ETH-USD': 0.2}
+            
             if input("CONFIRM REBALANCE - THIS IS ACTUAL MONEY (YES/NO)") == 'YES':
                     client = TradingClient(config.API_KEY, config.SECRET_KEY, paper=False)
                     rebalance.perform_rebalance(t_client=client, desired_allocations=portfolio)
-                    config.get_portfolio_stats()
+                    await config.send_update_msg()
             menu()
 
         case _:
             raise BaseException("Invalid input or crash")
         
 if __name__ == '__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
