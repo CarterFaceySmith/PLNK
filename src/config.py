@@ -8,6 +8,11 @@ import yfinance as yf
 import backtrader as bt
 import backtrader.feeds as btfeeds
 import pandas as pd
+from telegram import Bot
+from telegram import Update
+from telegram.ext import Updater
+from telegram.ext import CommandHandler
+from telegram.ext import MessageHandler, CallbackContext
 
 # Settings
 SYSTEM_MODE = 'PAPER'
@@ -15,15 +20,23 @@ API_KEY = 'PKB0OUCULGGX08VG0KW0'
 SECRET_KEY = 'EpsYl1t06L03vecfmzK0aZNgcQ4JHDDWHdiSSgQU'
 crypto = ['BTCUSD', 'ETHUSD', 'LTCUSD']
 
+# Initialize the Telegram Bot with your API token
+bot_token = '6376644809:AAHDbtsnmzyHCZuFrshhcs7un1-7r0g7j7M'  # Replace with your API token
+chat_id = '6014130527'  # Replace with your Telegram ID
+
 # Clients
 trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 rest_api = REST(API_KEY, SECRET_KEY, 'https://paper-api.alpaca.markets')
 crypto_client = CryptoHistoricalDataClient()
 stock_client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
+bot = Bot(token=bot_token)
 
 # Functions
 def return_clients():
     return trading_client,rest_api,crypto_client,stock_client
+
+async def send_message(chat_id, message):
+    await bot.send_message(chat_id=chat_id, text=message)
 
 def get_historic_data(symbol, rest_api, timeframe, start, end):
     if(symbol in crypto):
@@ -63,6 +76,23 @@ def get_portfolio_stats():
     else:
         for order in rest_api.list_orders():
             print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
+
+def return_portfolio_stats():
+    retString = f'Stats:\n\tOverall portfolio value: ${float(trading_client.get_account().portfolio_value):,.2f}\n\tCurrent buying power: ${float(trading_client.get_account().buying_power):,.2f}\n\tCurrent equity: ${float(trading_client.get_account().equity):,.2f}\n\tCurrent cash: ${float(trading_client.get_account().cash):,.2f}'
+    return retString
+
+async def send_update_msg():
+    contents = return_portfolio_stats()
+    await send_message(chat_id, f"Account:\n{contents}")
+    await send_message(chat_id, "Portfolio:\n\tCurrent positions:")
+    for pos in trading_client.list_positions():
+        await send_message(chat_id, f'\t\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
+    await send_message(chat_id, "\n\tCurrent orders:")
+    if len(trading_client.list_orders()) == 0:
+        await send_message(chat_id, '\t\tNo orders.')
+    else:
+        for order in trading_client.list_orders():
+            await send_message(chat_id, f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
 def validate_ticker(input=''):
     if re.match(r'[A-Z]{3,6}', input):
