@@ -38,7 +38,7 @@ async def main():
             portfolio = dict(zip(tickers, target_allocations))
 
             if input("Confirm rebalance? (y/n)") == 'y':
-                rebalance.perform_rebalance(portfolio)
+                rebalance.perform_rebalance(t_client=config.trading_client, desired_allocations=portfolio)
             
             menu()
 
