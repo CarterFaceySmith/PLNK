@@ -26,22 +26,35 @@ class Rebalance(bt.Strategy):
         self.start_cash = self.broker.getvalue()
 
     def next(self):
-        match self.params.frequency:
-            case 'yearly':
-                if (self.datetime.date().year == self.year_last_rebalanced):
-                    return
-                self.year_last_rebalanced = self.datetime.date().year
-            case 'monthly':
-                if (self.datetime.date().year == self.year_last_rebalanced) and (self.datetime.date().month == self.month_last_rebalanced):
-                    return
-                self.year_last_rebalanced = self.datetime.date().year
+        # Extract the frequency from the parameters
+        frequency = self.params.frequency
+
+        # Check if it's time for rebalance based on the specified frequency
+        if (frequency == 'yearly' and self.datetime.date().year != self.year_last_rebalanced) or \
+        (frequency == 'monthly' and (self.datetime.date().year != self.year_last_rebalanced or
+                                    self.datetime.date().month != self.month_last_rebalanced)) or \
+        (frequency == 'quarterly' and (self.datetime.date().year != self.year_last_rebalanced or
+                                        (self.datetime.date().month - 1) % 3 == 0)):
+
+            for i, d in enumerate(self.datas):
+                symbol = d._name
+                target_weight = self.params.weights[symbol]
+                current_weight = self.getposition(d).size / self.broker.getvalue()
+
+                # Check if the trade is profitable for monthly and quarterly rebalances
+                if (frequency == 'monthly' or frequency == 'quarterly') and current_weight < target_weight:
+                    profit = (target_weight - current_weight) * self.broker.getvalue()
+                    capital_gains_deduction = 0.5 * profit
+                    target_weight -= capital_gains_deduction / self.broker.getvalue()
+
+                # Rebalance to target weight
+                self.order_target_percent(d, target=target_weight)
+
+            # Update the rebalance date
+            self.year_last_rebalanced = self.datetime.date().year
+            if frequency in ['monthly', 'quarterly']:
                 self.month_last_rebalanced = self.datetime.date().month
-        
-        for i, d in enumerate(self.datas):
-            # NOTE: i = count, d = datafeed instance in self.datas
-            symbol = d._name
-            self.order_target_percent(d, target=self.params.weights[symbol])
-            # NOTE: self.order_target_percent() can take a string value or datafeed instance as the first argument
+
 
 class RebalanceAndAdd(bt.Strategy):
     params = dict(

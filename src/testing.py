@@ -75,7 +75,7 @@ import itertools
 
 async def test():
     strat_params = {
-        'frequency': 'monthly',
+        'frequency': 'yearly',
         'weights': {
             'VOO': 0.4,
             'VOOG': 0.15,
@@ -85,13 +85,13 @@ async def test():
     }
 
     user_start = "2010-01-01"
-    user_end = "2023-09-01"
-    contents = config.return_portfolio_stats()
-    await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
+    user_end = "2023-09-20"
+    # contents = config.return_portfolio_stats()
+    # await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
+    # exit()
+
+    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0, False)
     exit()
-
-    # backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0, False)
-
     # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 100000)
 
     # backtesting.backtest(strategies.ETHScalping, params, ['ETHUSD'], user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
