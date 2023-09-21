@@ -11,12 +11,12 @@ The perform_rebalance function intakes:
 '''
 def perform_rebalance(t_client, desired_allocations, precision=3):
     print('Closing all positions')
-    config.liquidate_portfolio()
+    config.liquidate_portfolio(client=t_client)
     print('Cancelling all open orders')
-    rest_api.cancel_all_orders()
+    t_client.cancel_orders()
     print('Beginning rebalance')
 
-    available_cash = float(rest_api.get_account().cash)
+    available_cash = float(t_client.get_account().cash)
     print(f'Available cash: {available_cash}')
 
     dollar_value_allocations = {symbol: percent * available_cash for symbol, percent in desired_allocations.items()}

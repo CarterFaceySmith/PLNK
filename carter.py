@@ -9,7 +9,7 @@ async def main():
     await config.send_message(config.chat_id, "REBALANCING:\n\n")
     rebalance.perform_rebalance(t_client=client, desired_allocations=portfolio)
     await config.send_update_msg()
-    await config.send_message(config.chat_id, "\n\n REBALANCE COMPLETE.")
+    await config.send_message(config.chat_id, "\n\nREBALANCE COMPLETE.")
     exit()
 
 if __name__ == '__main__':

@@ -51,13 +51,13 @@ def get_historic_data(symbol, rest_api, timeframe, start, end):
             raise(BaseException(f"Error retrieving {symbol} bars from Alpaca API"))
     return alpaca_data
 
-def liquidate_portfolio():
+def liquidate_portfolio(client):
     print('Liquidating portfolio...')
-    print(f'Starting cash: {float(rest_api.get_account().cash):,.2f}')
-    rest_api.cancel_all_orders()
-    rest_api.close_all_positions()
+    print(f'Starting cash: {float(client.get_account().cash):,.2f}')
+    client.cancel_all_orders()
+    client.close_all_positions()
     print('Portfolio liquidated.')
-    print(f'Ending cash: {float(rest_api.get_account().cash):,.2f}')
+    print(f'Ending cash: {float(client.get_account().cash):,.2f}')
 
 def get_portfolio_stats():
     print("Stats:")
