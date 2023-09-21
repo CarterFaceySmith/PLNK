@@ -49,7 +49,7 @@ async def main():
             menu()
 
         case '4':
-            config.get_portfolio_stats()
+            config.get_portfolio_stats(client=config.rest_api)
             menu()
 
         case '5':

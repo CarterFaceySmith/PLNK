@@ -59,22 +59,22 @@ def liquidate_portfolio(client):
     print('Portfolio liquidated.')
     print(f'Ending cash: {float(client.get_account().cash):,.2f}')
 
-def get_portfolio_stats():
+def get_portfolio_stats(client):
     print("Stats:")
-    print(f'\tOverall portfolio value: ${float(rest_api.get_account().portfolio_value):,.2f}')
-    print(f'\tCurrent buying power: ${float(rest_api.get_account().buying_power):,.2f}')
-    print(f'\tCurrent equity: ${float(rest_api.get_account().equity):,.2f}')
-    print(f'\tCurrent cash: ${float(rest_api.get_account().cash):,.2f}')
+    print(f'\tOverall portfolio value: ${float(client.get_account().portfolio_value):,.2f}')
+    print(f'\tCurrent buying power: ${float(client.get_account().buying_power):,.2f}')
+    print(f'\tCurrent equity: ${float(client.get_account().equity):,.2f}')
+    print(f'\tCurrent cash: ${float(client.get_account().cash):,.2f}')
 
     print("\nPortfolio:")
     print("\tCurrent positions:")
-    for pos in rest_api.list_positions():
+    for pos in client.list_positions():
         print(f'\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
     print("\n\tCurrent orders:")
-    if len(rest_api.list_orders()) == 0:
+    if len(client.list_orders()) == 0:
         print('\tNo orders.')
     else:
-        for order in rest_api.list_orders():
+        for order in client.list_orders():
             print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
 def return_portfolio_stats():
