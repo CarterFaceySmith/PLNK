@@ -44,7 +44,8 @@ async def menu():
             exit(0)
         case '6':
             print("Testing")
-            await config.send_update_msg()
+            # await config.send_update_msg()
+            print(config.live_client.get_calendar())
             # await testing.test()
             # y = config.live_client.get_all_positions()
             # for z in y:
@@ -87,7 +88,7 @@ async def main():
 #             menu()
 
 #         case '3':
-#             # TODO; Add validation of timing, cannot liquidate if markets are not open for some assets
+#             # TODO; Add validation of timing, cannot liquidate if markets are not open for some assets, use get_calendar() alpaca client method
 #             if input("Confirm liquidation of portfolio positions? (y/n)") == 'y':
 #                 config.liquidate_portfolio()
 #             menu()
