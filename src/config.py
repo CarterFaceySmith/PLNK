@@ -22,9 +22,8 @@ LIVE_API_KEY = 'AKQPMSXS0PF3WFVMV53K'
 LIVE_SEC_KEY = '8x5QP70KmhJLz8RPtNK8GVOsUZ7lcUrvlIFbbGww'
 crypto = ['BTCUSD', 'ETHUSD', 'LTCUSD', 'BTC-USD', 'ETH-USD', 'LTC-USD']
 
-# Initialize the Telegram Bot with your API token
-bot_token = '6376644809:AAHDbtsnmzyHCZuFrshhcs7un1-7r0g7j7M'  # Replace with your API token
-tg_chat_id = '6014130527'  # Replace with your Telegram ID
+bot_token = '6376644809:AAHDbtsnmzyHCZuFrshhcs7un1-7r0g7j7M'
+tg_chat_id = '6014130527'
 
 # Clients
 trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
@@ -62,28 +61,29 @@ def liquidate_portfolio(client):
     print('Portfolio liquidated.')
     print(f'Ending cash: {float(client.get_account().cash):,.2f}')
 
-def get_portfolio_stats(client):
-    print("Stats:")
-    print(f'\tOverall portfolio value: ${float(client.get_account().portfolio_value):,.2f}')
-    print(f'\tCurrent buying power: ${float(client.get_account().buying_power):,.2f}')
-    print(f'\tCurrent equity: ${float(client.get_account().equity):,.2f}')
-    print(f'\tCurrent cash: ${float(client.get_account().cash):,.2f}')
+# def get_portfolio_stats(client):
+#     print("Stats:")
+#     print(f'\tOverall portfolio value: ${float(client.get_account().portfolio_value):,.2f}')
+#     print(f'\tCurrent buying power: ${float(client.get_account().buying_power):,.2f}')
+#     print(f'\tCurrent equity: ${float(client.get_account().equity):,.2f}')
+#     print(f'\tCurrent cash: ${float(client.get_account().cash):,.2f}')
 
-    # print("\nPortfolio:")
-    # print("\tCurrent positions:")
-    # for pos in client.get_all_positions():
-    #     print(f'\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
-    # print("\n\tCurrent orders:")
-    # if len(client.get_orders()) == 0:
-    #     print('\tNo orders.')
-    # else:
-    #     for order in client.get_orders():
-    #         print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
+#     # print("\nPortfolio:")
+#     # print("\tCurrent positions:")
+#     # for pos in client.get_all_positions():
+#     #     print(f'\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
+#     # print("\n\tCurrent orders:")
+#     # if len(client.get_orders()) == 0:
+#     #     print('\tNo orders.')
+#     # else:
+#     #     for order in client.get_orders():
+#     #         print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
 def return_portfolio_stats(client):
     retString = f'\n--------------------\nPortfolio stats:\nOverall portfolio value: ${float(client.get_account().portfolio_value):,.2f}\nCurrent buying power: ${float(client.get_account().buying_power):,.2f}\nCurrent equity: ${float(client.get_account().equity):,.2f}\nCurrent cash: ${float(client.get_account().cash):,.2f}\n--------------------\n'
     return retString
 
+## TODO: Current bug retrieving account open positions from Alpaca
 async def send_update_msg():
     await send_message(f"Rebalance performed\nDate: {datetime.datetime.today().strftime('%d-%m-%Y')}\n{return_portfolio_stats(live_client)}")
     print(live_client.get_all_positions())
