@@ -57,7 +57,7 @@ async def menu():
 
 async def main():
     input("Welcome. Press enter to continue.")
-    input("Stocks are input as their ticker symbols (e.g. VOO, AAPL)\nCryptocurrencies are input as their currency pairs (e.g. BTC-USD, ETH-USD)\n")
+    input("Stocks are input as their ticker symbols (e.g. VOO, AAPL)\nCryptocurrencies are input as their currency pairs with a hyphen for backtesting (e.g. BTC-USD, ETH-USD) and without for rebalancing (e.g. BTCUSD, ETHUSD)\n")
     await menu()
     
 # async def main():
