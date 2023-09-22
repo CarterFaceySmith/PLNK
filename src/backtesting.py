@@ -21,7 +21,6 @@ def calculate_strategy_rating(results, annual_percent_return):
     """
 
     # Extract relevant metrics from analyzers
-    # annual_return = results[0].analyzers.
     sharpe_ratio = results[0].analyzers.mysharpe.get_analysis()["sharperatio"]
     sqn = results[0].analyzers.sqn.get_analysis()["sqn"]
     vwr = results[0].analyzers.vwr.get_analysis()["vwr"]
@@ -107,7 +106,7 @@ def bt_opt_init(mode=''):
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
+def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=False):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     # dict(**eval('dict(' + strat_params + ')'))
