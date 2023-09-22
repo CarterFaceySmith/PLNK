@@ -44,7 +44,7 @@ async def menu():
             exit(0)
         case '6':
             print("Testing")
-            # await config.send_update_msg()
+            await config.send_update_msg()
             # await testing.test()
             # y = config.live_client.get_all_positions()
             # for z in y:

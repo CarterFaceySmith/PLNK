@@ -85,8 +85,7 @@ def return_portfolio_stats(client):
 
 ## TODO: Current bug retrieving account open positions from Alpaca
 async def send_update_msg():
-    await send_message(f"Rebalance performed\nDate: {datetime.datetime.today().strftime('%d-%m-%Y')}\n{return_portfolio_stats(live_client)}")
-    print(live_client.get_all_positions())
+    await send_message(f"---------------------\nRebalance performed\nDate: {datetime.datetime.today().strftime('%d-%m-%Y')}{return_portfolio_stats(live_client)}")
 
     # pos_list = live_client.get_all_positions()
     # order_list = live_client.get_orders()
