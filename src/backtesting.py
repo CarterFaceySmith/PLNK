@@ -20,6 +20,7 @@ def calculate_strategy_rating(results, annual_percent_return):
     int: Strategy rating on a scale of 1 to 5.
     """
 
+    # TODO: Add CGT consideration to alter if present
     # Extract relevant metrics from analyzers
     sharpe_ratio = results[0].analyzers.mysharpe.get_analysis()["sharperatio"]
     sqn = results[0].analyzers.sqn.get_analysis()["sqn"]
@@ -125,16 +126,24 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
     results = cerebro.run()
     years = relativedelta(datetime.datetime.strptime(end, '%Y-%m-%d'), datetime.datetime.strptime(start, '%Y-%m-%d')).years
     annual_perc_ret = (((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years
-    print_backtest_analysis(initial_portfolio_value, cerebro.broker.getvalue(), years, results, annual_perc_ret)
+    print_backtest_analysis(strat_params['frequency'], initial_portfolio_value, cerebro.broker.getvalue(), years, results, annual_perc_ret)
 
     return cerebro.broker.getvalue()
 
-def print_backtest_analysis(init_val, final_val, years, results, annual_ret):
+def print_backtest_analysis(freq, init_val, final_val, years, results, annual_ret):
     print('Backtesting results:\n--------------------')
     print(f'Final Portfolio Value: ${final_val:,.2f}')
-    print(f'Total Profit: ${final_val - init_val:,.2f}')
-    print(f'Avg. Percent Return P.A: {(((final_val - init_val) / init_val) * 100) / years:,.2f}%') 
-    print(f'Avg. Profit P.A: ${(final_val - init_val) / years:,.2f}')
+
+    # NOTE: The below is to account for Australian CGT, you must hold a stock for at least 12 months to be eligible for the 50% discount
+    if freq != 'yearly':
+        print(f'Total Profit: ${(final_val - init_val) * 0.5:,.2f}')
+        print(f'Avg. Percent Return P.A: {((((final_val - init_val) / init_val) * 100) / years) * 0.5:,.2f}%') 
+        print(f'Avg. Profit P.A: ${((final_val - init_val) / years) * 0.5:,.2f}')
+    else:
+        print(f'Total Profit: ${final_val - init_val:,.2f}')
+        print(f'Avg. Percent Return P.A: {(((final_val - init_val) / init_val) * 100) / years:,.2f}%') 
+        print(f'Avg. Profit P.A: ${(final_val - init_val) / years:,.2f}')
+
     print(f'Avg. Sharpe Ratio: {results[0].analyzers.mysharpe.get_analysis()["sharperatio"]:.2f}')
     print(f'Avg. SQN: {results[0].analyzers.sqn.get_analysis()["sqn"]:.2f}')
     print(f'Avg. VWR: {results[0].analyzers.vwr.get_analysis()["vwr"]:.2f}')

@@ -73,16 +73,16 @@ import itertools
 
 async def test():
     strat_params = {
-        'frequency': 'monthly',
+        'frequency': 'yearly',
         'weights': {
             # 'VAS.AX': 0.4,
             # 'VGS.AX': 0.3,
             # 'VGB.AX': 0.1,
-            'VOO': 0.5,
+            'VOO': 0.4,
             'VOOG': 0.2,
             'IBM': 0.05,
-            # 'BTC-USD': 0.2,
-            # 'ETH-USD': 0.1,
+            'BTC-USD': 0.2,
+            'ETH-USD': 0.1,
         },
     }
 
