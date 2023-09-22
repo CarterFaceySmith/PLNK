@@ -67,19 +67,19 @@ def get_portfolio_stats(client):
     print(f'\tCurrent equity: ${float(client.get_account().equity):,.2f}')
     print(f'\tCurrent cash: ${float(client.get_account().cash):,.2f}')
 
-    print("\nPortfolio:")
-    print("\tCurrent positions:")
-    for pos in client.list_positions():
-        print(f'\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
-    print("\n\tCurrent orders:")
-    if len(client.list_orders()) == 0:
-        print('\tNo orders.')
-    else:
-        for order in client.list_orders():
-            print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
+    # print("\nPortfolio:")
+    # print("\tCurrent positions:")
+    # for pos in client.get_all_positions():
+    #     print(f'\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
+    # print("\n\tCurrent orders:")
+    # if len(client.get_orders()) == 0:
+    #     print('\tNo orders.')
+    # else:
+    #     for order in client.get_orders():
+    #         print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
-def return_portfolio_stats(trading_client):
-    retString = f'Stats:\n\tOverall portfolio value: ${float(trading_client.get_account().portfolio_value):,.2f}\n\tCurrent buying power: ${float(trading_client.get_account().buying_power):,.2f}\n\tCurrent equity: ${float(trading_client.get_account().equity):,.2f}\n\tCurrent cash: ${float(trading_client.get_account().cash):,.2f}'
+def return_portfolio_stats(client):
+    retString = f'\n--------------------\nPortfolio stats:\nOverall portfolio value: ${float(client.get_account().portfolio_value):,.2f}\nCurrent buying power: ${float(client.get_account().buying_power):,.2f}\nCurrent equity: ${float(client.get_account().equity):,.2f}\nCurrent cash: ${float(client.get_account().cash):,.2f}\n--------------------\n'
     return retString
 
 async def send_update_msg():

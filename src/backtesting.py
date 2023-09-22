@@ -146,7 +146,6 @@ def print_backtest_analysis(init_val, final_val, years, results, annual_ret):
     strategy_rating = calculate_strategy_rating(results, annual_ret)
     print(f'Strategy Rating: {strategy_rating} stars\n--------------------')
     
-
 '''
     Optimise function intakes:
         - The strategy to test, an instance of a defined backtrader.strategy object
