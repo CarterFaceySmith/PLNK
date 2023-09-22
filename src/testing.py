@@ -75,7 +75,7 @@ import itertools
 
 async def test():
     strat_params = {
-        'frequency': 'quarterly',
+        'frequency': 'yearly',
         'weights': {
             'VOO': 0.4,
             'VOOG': 0.1,
@@ -85,7 +85,7 @@ async def test():
         },
     }
 
-    user_start = "2010-01-01"
+    user_start = "2010-09-09"
     user_end = "2023-09-20"
     # contents = config.return_portfolio_stats()
     # await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
