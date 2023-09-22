@@ -30,14 +30,10 @@ class Rebalance(bt.Strategy):
         frequency = self.params.frequency
 
         # Check rebalance interval
-        # TODO: Only yearly, monthly and daily rebalances are working properly
         if (frequency == 'yearly' and self.datetime.date().year != self.year_last_rebalanced) or \
-        (frequency == 'monthly' and (self.datetime.date().year != self.year_last_rebalanced or
-                                    self.datetime.date().month != self.month_last_rebalanced)) or \
-        (frequency == 'quarterly' and (self.datetime.date().year != self.year_last_rebalanced or
-                                        (self.datetime.date().month - 1) % 3 == 0)) or \
-        (frequency == 'biannually' and (self.datetime.date().year != self.year_last_rebalanced or
-                                        (self.datetime.date().month - 1) % 6 == 0)) or \
+        (frequency == 'monthly' and (self.datetime.date().year != self.year_last_rebalanced or self.datetime.date().month != self.month_last_rebalanced)) or \
+        (frequency == 'quarterly' and (self.datetime.date().month in [1, 4, 7, 10] and self.datetime.date().month != self.month_last_rebalanced)) or \
+        (frequency == 'biannually' and (self.datetime.date().month in [1, 7] and self.datetime.date().month != self.month_last_rebalanced)) or \
         (frequency == 'daily' and self.datetime.date() != self.data.datetime.date(-1)): # Check if it's a new day
 
             for i, d in enumerate(self.datas):
