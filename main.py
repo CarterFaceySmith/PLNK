@@ -7,46 +7,48 @@ import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 async def menu():
-    print(f'1. Backtest a portfolio allocation\n2. Paper rebalance\n3. Live rebalance\n4. Check live portfolio stats\n5. Exit')
+    print(f'1. Backtest a portfolio\n2. Paper rebalance\n3. Live rebalance\n4. Check live portfolio stats\n5. Exit')
     choice = input()
     match choice:
         case '1':
-            strat_params = {}
+            strat_params = {
+                'weights': {},
+                'frequency': None,
+            }
             tickers, target_allocations = config.input_portfolio()
             for ticker in tickers:
                 if config.validate_ticker(ticker):
-                    strat_params[ticker] = target_allocations[tickers.index(ticker)]
+                    strat_params['weights'][ticker] = target_allocations[tickers.index(ticker)]
             user_start, user_end = config.input_valid_dates()
             comm, cash = config.input_comm_cash()
-            rebalance_rate = input("Enter rebalance rate (daily, weekly, monthly, quarterly, yearly): ")
-            strat_params['frequency'] = rebalance_rate
-            backtesting.backtest(strategies.Rebalance, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm)
+            strat_params['frequency'] = input("Enter rebalance rate (daily, weekly, monthly, quarterly, yearly): ")
+            backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, cash, comm)
         case '2':
             print("Paper rebalance")
             tickers, target_allocations = config.input_portfolio()
             portfolio = dict(zip(tickers, target_allocations))
             rebalance.perform_paper_rebalance(config.rest_api, config.trading_client, desired_allocations=portfolio)
             print("Paper rebalance complete.")
-            menu()
+            await menu()
         case '3':
             print("Live rebalance")
             tickers, target_allocations = config.input_portfolio()
             portfolio = dict(zip(tickers, target_allocations))
-            await rebalance.perform_live_rebalance(t_client=TradingClient(config.API_KEY, config.SECRET_KEY, paper=False), desired_allocations=portfolio)
+            await rebalance.perform_live_rebalance(t_client=config.live_client, desired_allocations=portfolio)
             print("Live rebalance complete.")
-            menu()
+            await menu()
         case '4':
-            config.get_portfolio_stats(client=TradingClient(config.API_KEY, config.SECRET_KEY, paper=False))
-            menu()
+            print(config.return_portfolio_stats(client=config.live_client))
+            await menu()
         case '5':
             exit(0)
         case '6':
             print("Testing")
             await testing.test()
-            menu()
+            await menu()
         case _:
             print('Invalid input')
-            menu()
+            await menu()
 
 async def main():
     input("Welcome. Press enter to continue.")

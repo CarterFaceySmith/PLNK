@@ -7,9 +7,9 @@ The perform_rebalance function intakes:
     Parameter 1: A dictionary of Alpaca API tickers and corresponding percentage allocations (0 < sum(x) < 1)
     Parameter 2: An integer to set the decimal precision of the orders
 '''
-async def perform_live_rebalance(trading_client, desired_allocations, precision=3):
-    print('Closing all positions')
-    config.liquidate_portfolio(client=trading_client)
+async def perform_live_rebalance(rest_api, trading_client, desired_allocations, precision=3):
+    print('Closing all positions and open orders')
+    trading_client.close_all_positions(cancel_orders=True)
     print('Beginning rebalance')
     available_cash = float(trading_client.get_account().cash)
     print(f'Available cash: {available_cash}')
@@ -30,10 +30,8 @@ async def perform_live_rebalance(trading_client, desired_allocations, precision=
 
 
 def perform_paper_rebalance(rest_api, trading_client, desired_allocations, precision=3):
-    print('Closing all positions')
-    rest_api.close_all_positions()
-    print('Cancelling all open orders')
-    rest_api.cancel_all_orders()
+    print('Closing all positions and open orders')
+    trading_client.close_all_positions(cancel_orders=True)
     print('Beginning rebalance')
 
     available_cash = float(rest_api.get_account().cash)
