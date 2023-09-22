@@ -9,6 +9,40 @@ collections.Iterable = collections.abc.Iterable
 
 rest_api = config.rest_api
 
+def calculate_strategy_rating(results, annual_percent_return):
+    """
+    Calculate a rating for the strategy based on the analyzers and returns.
+
+    Parameters:
+    results (Backtrader Strategy Results): Strategy results from backtesting.
+
+    Returns:
+    int: Strategy rating on a scale of 1 to 5.
+    """
+
+    # Extract relevant metrics from analyzers
+    # annual_return = results[0].analyzers.
+    sharpe_ratio = results[0].analyzers.mysharpe.get_analysis()["sharperatio"]
+    sqn = results[0].analyzers.sqn.get_analysis()["sqn"]
+    vwr = results[0].analyzers.vwr.get_analysis()["vwr"]
+
+    # Define thresholds for each metric to assign ratings
+    return_thresholds = [5.0, 10.0, 15.0, 20.0, 25.0]  # Annual return thresholds as a whole percentage
+    sharpe_thresholds = [0.0, 0.5, 1.0, 1.5, 2.0]  # Sharpe Ratio thresholds
+    sqn_thresholds = [0.0, 2.0, 2.5, 3.0, 5.1]     # SQN thresholds
+    vwr_thresholds = [1.0, 1.5, 2.0, 2.5, 3.0]     # VWR thresholds
+
+    # Calculate ratings based on thresholds
+    return_rating = sum(annual_percent_return >= threshold for threshold in return_thresholds)
+    sharpe_rating = sum(sharpe_ratio >= threshold for threshold in sharpe_thresholds)
+    sqn_rating = sum(sqn >= threshold for threshold in sqn_thresholds)
+    vwr_rating = sum(vwr >= threshold for threshold in vwr_thresholds)
+
+    # Calculate an overall rating as an average of individual ratings
+    overall_rating = (return_rating + sharpe_rating + sqn_rating + vwr_rating) / 4
+
+    return overall_rating
+
 def bt_opt_init(mode=''):
     print("Available strategies:")
     strategy = strategies.select_strat()
@@ -78,6 +112,9 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
     cerebro.broker.setcash(cash)
     # dict(**eval('dict(' + strat_params + ')'))
     cerebro.addstrategy(strategy, strat_params)
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
+    cerebro.addanalyzer(bt.analyzers.SQN, _name='sqn')
+    cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')
     
     for symbol in symbols:
         # alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
@@ -89,17 +126,27 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
 
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
-    print(f'Starting Portfolio Value: ${initial_portfolio_value:,.2f}')
     results = cerebro.run()
-    print(f'Final Portfolio Value: ${cerebro.broker.getvalue():,.2f}')
-    print(f'Total Profit: ${cerebro.broker.getvalue() - initial_portfolio_value:,.2f}')
     years = relativedelta(datetime.datetime.strptime(end, '%Y-%m-%d'), datetime.datetime.strptime(start, '%Y-%m-%d')).years
-    print(f'Avg. Percent Return P.A: {(((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years:,.2f}%') 
-    print(f'Avg. Profit P.A: ${(cerebro.broker.getvalue() - initial_portfolio_value) / years:,.2f}')
+    annual_perc_ret = (((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years
+    print_backtest_analysis(initial_portfolio_value, cerebro.broker.getvalue(), years, results, annual_perc_ret)
 
     if plotting: cerebro.plot()
 
     return cerebro.broker.getvalue()
+
+def print_backtest_analysis(init_val, final_val, years, results, annual_ret):
+    print('Backtesting results:\n--------------------')
+    print(f'Final Portfolio Value: ${final_val:,.2f}')
+    print(f'Total Profit: ${final_val - init_val:,.2f}')
+    print(f'Avg. Percent Return P.A: {(((final_val - init_val) / init_val) * 100) / years:,.2f}%') 
+    print(f'Avg. Profit P.A: ${(final_val - init_val) / years:,.2f}')
+    print(f'Avg. Sharpe Ratio: {results[0].analyzers.mysharpe.get_analysis()["sharperatio"]:.2f}')
+    print(f'Avg. SQN: {results[0].analyzers.sqn.get_analysis()["sqn"]:.2f}')
+    print(f'Avg. VWR: {results[0].analyzers.vwr.get_analysis()["vwr"]:.2f}')
+    strategy_rating = calculate_strategy_rating(results, annual_ret)
+    print(f'Strategy Rating: {strategy_rating} stars\n--------------------')
+    
 
 '''
     Optimise function intakes:

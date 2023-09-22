@@ -34,7 +34,10 @@ class Rebalance(bt.Strategy):
         (frequency == 'monthly' and (self.datetime.date().year != self.year_last_rebalanced or
                                     self.datetime.date().month != self.month_last_rebalanced)) or \
         (frequency == 'quarterly' and (self.datetime.date().year != self.year_last_rebalanced or
-                                        (self.datetime.date().month - 1) % 3 == 0)):
+                                        (self.datetime.date().month - 1) % 3 == 0)) or \
+        (frequency == 'biannually' and (self.datetime.date().year != self.year_last_rebalanced or
+                                        (self.datetime.date().month - 1) % 6 == 0)) or \
+        (frequency == 'daily' and self.datetime.date() != self.data.datetime.date(-1)): # Check if it's a new day
 
             for i, d in enumerate(self.datas):
                 symbol = d._name
@@ -42,7 +45,7 @@ class Rebalance(bt.Strategy):
                 current_weight = self.getposition(d).size / self.broker.getvalue()
 
                 # Check if the trade is profitable for monthly and quarterly rebalances
-                if (frequency == 'monthly' or frequency == 'quarterly') and current_weight < target_weight:
+                if (frequency == 'monthly' or frequency == 'quarterly' or frequency == 'biannually' or frequency == 'daily') and current_weight < target_weight:
                     profit = (target_weight - current_weight) * self.broker.getvalue()
                     capital_gains_deduction = 0.5 * profit
                     target_weight -= capital_gains_deduction / self.broker.getvalue()
@@ -54,7 +57,6 @@ class Rebalance(bt.Strategy):
             self.year_last_rebalanced = self.datetime.date().year
             if frequency in ['monthly', 'quarterly']:
                 self.month_last_rebalanced = self.datetime.date().month
-
 
 class RebalanceAndAdd(bt.Strategy):
     params = dict(
