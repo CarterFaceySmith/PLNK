@@ -33,7 +33,6 @@ def perform_paper_rebalance(rest_api, trading_client, desired_allocations, preci
     print('Closing all positions and open orders')
     trading_client.close_all_positions(cancel_orders=True)
     print('Beginning rebalance')
-
     available_cash = float(rest_api.get_account().cash)
     print(f'Available cash: {available_cash}')
 
