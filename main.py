@@ -34,7 +34,7 @@ async def menu():
             print("Live rebalance")
             tickers, target_allocations = config.input_portfolio()
             portfolio = dict(zip(tickers, target_allocations))
-            await rebalance.perform_live_rebalance(t_client=config.live_client, desired_allocations=portfolio)
+            await rebalance.perform_live_rebalance(trading_client=config.live_client, desired_allocations=portfolio)
             print("Live rebalance complete.")
             await menu()
         case '4':
@@ -44,7 +44,8 @@ async def menu():
             exit(0)
         case '6':
             print("Testing")
-            await testing.test()
+            # await config.send_update_msg()
+            # await testing.test()
             await menu()
         case _:
             print('Invalid input')
