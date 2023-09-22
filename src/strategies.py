@@ -29,7 +29,8 @@ class Rebalance(bt.Strategy):
         # Extract the frequency from the parameters
         frequency = self.params.frequency
 
-        # Check if it's time for rebalance based on the specified frequency
+        # Check rebalance interval
+        # TODO: Only yearly, monthly and daily rebalances are working properly
         if (frequency == 'yearly' and self.datetime.date().year != self.year_last_rebalanced) or \
         (frequency == 'monthly' and (self.datetime.date().year != self.year_last_rebalanced or
                                     self.datetime.date().month != self.month_last_rebalanced)) or \
@@ -44,18 +45,23 @@ class Rebalance(bt.Strategy):
                 target_weight = self.params.weights[symbol]
                 current_weight = self.getposition(d).size / self.broker.getvalue()
 
+                # TODO: Currently does not update total after figuring out cgt and rebalances to weird percentages as a result
                 # Check if the trade is profitable for monthly and quarterly rebalances
-                if (frequency == 'monthly' or frequency == 'quarterly' or frequency == 'biannually' or frequency == 'daily') and current_weight < target_weight:
-                    profit = (target_weight - current_weight) * self.broker.getvalue()
-                    capital_gains_deduction = 0.5 * profit
-                    target_weight -= capital_gains_deduction / self.broker.getvalue()
+                # if (frequency == 'monthly' or frequency == 'quarterly' or frequency == 'biannually' or frequency == 'daily') and current_weight < target_weight:
+                #     profit = (target_weight - current_weight) * self.broker.getvalue()
+                #     capital_gains_deduction = 0.5 * profit
+                #     self.log(f'Capital gains deduction: {capital_gains_deduction:,.2f}')
+                #     self.broker.set_cash(self.broker.get_cash() - capital_gains_deduction)
+                    # target_weight -= capital_gains_deduction / self.broker.getvalue()
+                    # self.log(f'New target weight for {symbol}: {target_weight:.2%}')
 
                 # Rebalance to target weight
                 self.order_target_percent(d, target=target_weight)
+                self.log(f'Rebalancing {symbol} to {target_weight:.2%}')
 
             # Update the rebalance date
             self.year_last_rebalanced = self.datetime.date().year
-            if frequency in ['monthly', 'quarterly']:
+            if frequency in ['monthly', 'quarterly', 'biannually']:
                 self.month_last_rebalanced = self.datetime.date().month
 
 class RebalanceAndAdd(bt.Strategy):

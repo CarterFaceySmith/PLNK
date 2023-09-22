@@ -117,8 +117,8 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
         alpaca_data = yf.download(symbol, start=start, end=end, )
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
-        print(f'Added {symbol} data to cerebro instance\n')
-        # print(f"{alpaca_data.head(1)}\n")
+        print(f'Added {symbol} data to cerebro instance')
+        print(f"{alpaca_data.head(1)}\n")
 
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()
