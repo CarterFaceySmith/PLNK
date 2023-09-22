@@ -46,6 +46,10 @@ async def menu():
             print("Testing")
             # await config.send_update_msg()
             # await testing.test()
+            y = config.live_client.get_all_positions()
+            for z in y:
+                print(z)
+            exit()
             await menu()
         case _:
             print('Invalid input')
@@ -53,6 +57,7 @@ async def menu():
 
 async def main():
     input("Welcome. Press enter to continue.")
+    input("Stocks are input as their ticker symbols (e.g. VOO, AAPL)\nCryptocurrencies are input as their currency pairs (e.g. BTC-USD, ETH-USD)\n")
     await menu()
     
 # async def main():
