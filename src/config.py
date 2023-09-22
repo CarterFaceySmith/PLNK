@@ -152,12 +152,6 @@ def input_comm_cash():
     else:
         return comm, cash
 
-def input_plotting():
-    # plot_input = input("Would you like to plot the results? (y/n): ")
-    # TODO: There is an active bug with Backtrader that renders plotting via matplotlib impossible for now, this will be set to always returns False until the bug is fixed
-    # return True if plot_input == 'y' else False
-    return False
-
 def construct_market_order(symbol,allocation,order_side='',prec=3):
     if symbol in crypto:
         time_in_force = TimeInForce.GTC # Required for crypto market orders

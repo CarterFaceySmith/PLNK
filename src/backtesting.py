@@ -59,9 +59,8 @@ def bt_opt_init(mode=''):
 
         user_start, user_end = config.input_valid_dates()
         comm, cash = config.input_comm_cash()
-        plot = config.input_plotting()
         
-        backtest(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
+        backtest(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm)
     
     if mode == 'OPTIMISE':  
         for param in strategy.params._getkeys():
@@ -91,9 +90,8 @@ def bt_opt_init(mode=''):
 
         user_start, user_end = config.input_valid_dates()
         comm, cash = config.input_comm_cash()
-        plot = config.input_plotting()
         
-        optimise(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm, plot)
+        optimise(strategy, strat_params, tickers, user_start, user_end, TimeFrame.Day, cash, comm)
 
 '''
     Backtest function intakes:
@@ -106,7 +104,7 @@ def bt_opt_init(mode=''):
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=False):
+def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     # dict(**eval('dict(' + strat_params + ')'))
@@ -128,8 +126,6 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
     years = relativedelta(datetime.datetime.strptime(end, '%Y-%m-%d'), datetime.datetime.strptime(start, '%Y-%m-%d')).years
     annual_perc_ret = (((cerebro.broker.getvalue() - initial_portfolio_value) / initial_portfolio_value) * 100) / years
     print_backtest_analysis(initial_portfolio_value, cerebro.broker.getvalue(), years, results, annual_perc_ret)
-
-    if plotting: cerebro.plot()
 
     return cerebro.broker.getvalue()
 
@@ -157,7 +153,7 @@ def print_backtest_analysis(init_val, final_val, years, results, annual_ret):
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end="2023-02-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0, plotting=bool):
+def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end="2023-02-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0):
     cerebro = bt.Cerebro(stdstats=True, optreturn=False)
     cerebro.broker.setcash(cash)
     cerebro.optstrategy(strategy, **strat_params)
@@ -173,9 +169,6 @@ def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end=
     initial_portfolio_value = cerebro.broker.getvalue()
     print(f'Starting Portfolio Value: {initial_portfolio_value:,}')
     results = cerebro.run(maxcpus=1)
-
-    if plotting:
-        cerebro.plot()
 
 # weights = {"VOO":0.5}
 # tickers = list(weights.keys())
