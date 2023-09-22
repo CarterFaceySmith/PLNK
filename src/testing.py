@@ -71,8 +71,6 @@ import itertools
 #     else:
 #         print("No valid total return found for any weight combination.")
 
-
-
 async def test():
     strat_params = {
         'frequency': 'yearly',
@@ -91,7 +89,7 @@ async def test():
     # await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
     # exit()
 
-    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0, False)
+    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0)
     exit()
     # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 100000)
 

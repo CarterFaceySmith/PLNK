@@ -22,10 +22,11 @@ crypto = ['BTCUSD', 'ETHUSD', 'LTCUSD']
 
 # Initialize the Telegram Bot with your API token
 bot_token = '6376644809:AAHDbtsnmzyHCZuFrshhcs7un1-7r0g7j7M'  # Replace with your API token
-chat_id = '6014130527'  # Replace with your Telegram ID
+tg_chat_id = '6014130527'  # Replace with your Telegram ID
 
 # Clients
 trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
+live_client = TradingClient(API_KEY, SECRET_KEY, paper=False)
 rest_api = REST(API_KEY, SECRET_KEY, 'https://paper-api.alpaca.markets')
 crypto_client = CryptoHistoricalDataClient()
 stock_client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
@@ -35,8 +36,8 @@ bot = Bot(token=bot_token)
 def return_clients():
     return trading_client,rest_api,crypto_client,stock_client
 
-async def send_message(chat_id, message):
-    await bot.send_message(chat_id=chat_id, text=message)
+async def send_message(message):
+    await bot.send_message(chat_id=tg_chat_id, text=message)
 
 def get_historic_data(symbol, rest_api, timeframe, start, end):
     if(symbol in crypto):
@@ -77,22 +78,22 @@ def get_portfolio_stats(client):
         for order in client.list_orders():
             print(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
-def return_portfolio_stats():
+def return_portfolio_stats(trading_client):
     retString = f'Stats:\n\tOverall portfolio value: ${float(trading_client.get_account().portfolio_value):,.2f}\n\tCurrent buying power: ${float(trading_client.get_account().buying_power):,.2f}\n\tCurrent equity: ${float(trading_client.get_account().equity):,.2f}\n\tCurrent cash: ${float(trading_client.get_account().cash):,.2f}'
     return retString
 
 async def send_update_msg():
-    contents = return_portfolio_stats()
-    await send_message(chat_id, f"Account:\n{contents}")
-    await send_message(chat_id, "Portfolio:\n\tCurrent positions:")
-    for pos in trading_client.list_positions():
-        await send_message(chat_id, f'\t\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
-    await send_message(chat_id, "\n\tCurrent orders:")
-    if len(trading_client.list_orders()) == 0:
-        await send_message(chat_id, '\t\tNo orders.')
+    contents = return_portfolio_stats(live_client)
+    await send_message(f"Account:\n{contents}")
+    await send_message("Portfolio:\n\tCurrent positions:")
+    for pos in live_client.list_positions():
+        await send_message(f'\t\t{pos.symbol}:\t{float(pos.qty):,.2f} shares')
+    await send_message("\n\tCurrent orders:")
+    if len(live_client.list_orders()) == 0:
+        await send_message('\t\tNo orders.')
     else:
-        for order in trading_client.list_orders():
-            await send_message(chat_id, f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
+        for order in live_client.list_orders():
+            await send_message(f'\t{order.symbol}:\t{float(order.qty):,.2f} shares')
 
 def validate_ticker(input=''):
     if re.match(r'[A-Z]{3,6}', input):
@@ -177,7 +178,7 @@ def construct_market_order(symbol,allocation,order_side='',prec=3):
     
     return market_order, target_holding
 
-def download_to_csv(symbol, start='2010-01-01', end='2023-09-01'):
+def download_to_csv(symbol, start='2010-09-09', end='2023-09-01'):
     data_df = yf.download(symbol, start_date=start, end_date=end)
     data_df.to_csv(f"{symbol}_financial_data.csv")
 
