@@ -116,7 +116,6 @@ def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=
     cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')
     
     for symbol in symbols:
-        # alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
         alpaca_data = yf.download(symbol, start=start, end=end, )
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
@@ -145,7 +144,8 @@ def print_backtest_analysis(init_val, final_val, years, results, annual_ret):
     print(f'Avg. VWR: {results[0].analyzers.vwr.get_analysis()["vwr"]:.2f}')
     strategy_rating = calculate_strategy_rating(results, annual_ret)
     print(f'Strategy Rating: {strategy_rating} stars\n--------------------')
-    
+
+## TODO: Fix optimise function
 '''
     Optimise function intakes:
         - The strategy to test, an instance of a defined backtrader.strategy object
