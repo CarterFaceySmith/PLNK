@@ -43,7 +43,6 @@ async def menu():
         case '5':
             exit(0)
         case '6':
-            print("Testing")
             # await config.send_update_msg()
             # print(config.live_client.get_calendar())
             await testing.test()
