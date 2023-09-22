@@ -73,18 +73,21 @@ import itertools
 
 async def test():
     strat_params = {
-        'frequency': 'yearly',
+        'frequency': 'biannually',
         'weights': {
-            'VOO': 0.4,
-            'VOOG': 0.1,
+            # 'VAS.AX': 0.4,
+            # 'VGS.AX': 0.3,
+            # 'VGB.AX': 0.1,
+            'VOO': 0.5,
+            'VOOG': 0.2,
             'IBM': 0.05,
-            'BTC-USD': 0.2,
-            'ETH-USD': 0.2,
+            # 'BTC-USD': 0.2,
+            # 'ETH-USD': 0.1,
         },
     }
 
-    user_start = "2010-09-09"
-    user_end = "2023-09-20"
+    user_start = "2010-10-01"
+    user_end = "2022-09-01"
     # contents = config.return_portfolio_stats()
     # await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
     # exit()
