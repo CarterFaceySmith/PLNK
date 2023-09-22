@@ -1,3 +1,4 @@
+import math
 import backtrader as bt
 import re, numpy
 
@@ -43,17 +44,17 @@ class Rebalance(bt.Strategy):
 
                 # TODO: Currently does not update total after figuring out cgt and rebalances to weird percentages as a result
                 # Check if the trade is profitable for monthly and quarterly rebalances
-                # if (frequency == 'monthly' or frequency == 'quarterly' or frequency == 'biannually' or frequency == 'daily') and current_weight < target_weight:
+                # if frequency is not 'yearly' and current_weight < target_weight:
                 #     profit = (target_weight - current_weight) * self.broker.getvalue()
                 #     capital_gains_deduction = 0.5 * profit
-                #     self.log(f'Capital gains deduction: {capital_gains_deduction:,.2f}')
-                #     self.broker.set_cash(self.broker.get_cash() - capital_gains_deduction)
+                    # self.log(f'{symbol} CGT: {capital_gains_deduction:,.2f}')
+                    # self.broker.set_cash(self.broker.get_cash() - capital_gains_deduction)
                     # target_weight -= capital_gains_deduction / self.broker.getvalue()
                     # self.log(f'New target weight for {symbol}: {target_weight:.2%}')
 
                 # Rebalance to target weight
-                self.order_target_percent(d, target=target_weight)
-                self.log(f'Rebalancing {symbol} to {target_weight:.2%}')
+                order = self.order_target_percent(d, target=target_weight)
+                # self.log(f'Rebalancing {symbol} to {target_weight:.2%}')
 
             # Update the rebalance date
             self.year_last_rebalanced = self.datetime.date().year

@@ -73,7 +73,7 @@ import itertools
 
 async def test():
     strat_params = {
-        'frequency': 'biannually',
+        'frequency': 'monthly',
         'weights': {
             # 'VAS.AX': 0.4,
             # 'VGS.AX': 0.3,
