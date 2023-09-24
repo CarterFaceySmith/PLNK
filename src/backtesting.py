@@ -148,7 +148,7 @@ def print_backtest_analysis(freq, init_val, final_val, years, results, annual_re
     print(f'Avg. SQN: {results[0].analyzers.sqn.get_analysis()["sqn"]:.2f}')
     print(f'Avg. VWR: {results[0].analyzers.vwr.get_analysis()["vwr"]:.2f}')
     strategy_rating = calculate_strategy_rating(results, annual_ret)
-    print(f'Strategy Rating: {strategy_rating} stars\n--------------------')
+    print(f'Strategy Rating: {strategy_rating}/5.0 stars\n--------------------')
 
 ## TODO: Fix optimise function
 '''

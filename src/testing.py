@@ -78,11 +78,13 @@ async def test():
             # 'VAS.AX': 0.1,
             # 'VGS.AX': 0.3,
             # 'VGB.AX': 0.1,
-            'VOO': 0.4,
-            'VOOG': 0.2,
+            'VOO': 0.33,
+            'VOOG': 0.1,
             'IBM': 0.05,
-            'BTC-USD': 0.2,
-            'ETH-USD': 0.1,
+            # 'BTC-USD': 0.2,
+            # 'ETH-USD': 0.1,
+            'BTC-USD': 0.33,
+            'ETH-USD': 0.17,
         },
     }
 
