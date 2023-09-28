@@ -23,25 +23,25 @@ def calculate_strategy_rating(results, annual_percent_return):
     # TODO: Add CGT consideration to alter if present
     # Extract relevant metrics from analyzers
     sharpe_ratio = results[0].analyzers.mysharpe.get_analysis()["sharperatio"]
-    sqn = results[0].analyzers.sqn.get_analysis()["sqn"]
+    # sqn = results[0].analyzers.sqn.get_analysis()["sqn"]
     vwr = results[0].analyzers.vwr.get_analysis()["vwr"]
 
     # Define thresholds for each metric to assign ratings
-    return_thresholds = [5.0, 10.0, 15.0, 20.0, 25.0]  # Annual return thresholds as a whole percentage
+    return_thresholds = [8.0, 12.0, 14.0, 16.0, 20.0]  # Annual return thresholds as a whole percentage
     sharpe_thresholds = [0.0, 0.5, 1.0, 1.5, 2.0]  # Sharpe Ratio thresholds
-    sqn_thresholds = [0.0, 2.0, 2.5, 3.0, 5.1]     # SQN thresholds
-    vwr_thresholds = [1.0, 1.5, 2.0, 2.5, 3.0]     # VWR thresholds
+    # sqn_thresholds = [0.0, 2.0, 2.5, 3.0, 5.1]     # SQN thresholds
+    vwr_thresholds = [2.0, 2.5, 3.0, 5.1, 7.0]     # VWR thresholds
 
     # Calculate ratings based on thresholds
     return_rating = sum(annual_percent_return >= threshold for threshold in return_thresholds)
     sharpe_rating = sum(sharpe_ratio >= threshold for threshold in sharpe_thresholds)
-    sqn_rating = sum(sqn >= threshold for threshold in sqn_thresholds)
+    # sqn_rating = sum(sqn >= threshold for threshold in sqn_thresholds)
     vwr_rating = sum(vwr >= threshold for threshold in vwr_thresholds)
 
     # Calculate an overall rating as an average of individual ratings
-    overall_rating = (return_rating + sharpe_rating + sqn_rating + vwr_rating) / 4
+    overall_rating = (return_rating + sharpe_rating + vwr_rating) / 3
 
-    return overall_rating
+    return round(overall_rating, 2)
 
 def bt_opt_init(mode=''):
     print("Available strategies:")
@@ -105,13 +105,13 @@ def bt_opt_init(mode=''):
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end="2023-08-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0):
+def backtest(strategy, strat_params=None, symbols=list, start="2000-01-01", end=datetime.datetime.now().strftime("%Y-%m-%d"), timeframe=TimeFrame.Day, cash=100000, comm=0.0):
     cerebro = bt.Cerebro(stdstats=True)
     cerebro.broker.setcash(cash)
     # dict(**eval('dict(' + strat_params + ')'))
     cerebro.addstrategy(strategy, strat_params)
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
-    cerebro.addanalyzer(bt.analyzers.SQN, _name='sqn')
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio_A, _name='mysharpe')
+    # cerebro.addanalyzer(bt.analyzers.SQN, _name='sqn')
     cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')
     
     for symbol in symbols:
@@ -145,7 +145,7 @@ def print_backtest_analysis(freq, init_val, final_val, years, results, annual_re
         print(f'Avg. Profit P.A: ${(final_val - init_val) / years:,.2f}')
 
     print(f'Avg. Sharpe Ratio: {results[0].analyzers.mysharpe.get_analysis()["sharperatio"]:.2f}')
-    print(f'Avg. SQN: {results[0].analyzers.sqn.get_analysis()["sqn"]:.2f}')
+    # print(f'Avg. SQN: {results[0].analyzers.sqn.get_analysis()["sqn"]:.2f}')
     print(f'Avg. VWR: {results[0].analyzers.vwr.get_analysis()["vwr"]:.2f}')
     strategy_rating = calculate_strategy_rating(results, annual_ret)
     print(f'Strategy Rating: {strategy_rating}/5.0 stars\n--------------------')
@@ -162,17 +162,17 @@ def print_backtest_analysis(freq, init_val, final_val, years, results, annual_re
         - The commission fee per trade as a float, defaulting to 0.0
         - A boolean switch for if you want to display a chart of results upon completion
 '''
-def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end="2023-02-10", timeframe=TimeFrame.Day, cash=100000, comm=0.0):
+def optimise(strategy, strat_params=None, symbols=list, start="2015-12-01", end=datetime.datetime.now().strftime("%Y-%m-%d"), timeframe=TimeFrame.Day, cash=100000, comm=0.0):
     cerebro = bt.Cerebro(stdstats=True, optreturn=False)
     cerebro.broker.setcash(cash)
     cerebro.optstrategy(strategy, **strat_params)
     
     for symbol in symbols:
-        alpaca_data = config.get_historic_data(symbol, rest_api, timeframe, start, end)
+        alpaca_data = yf.download(symbol, start=start, end=end, )
         data = bt.feeds.PandasData(dataname=alpaca_data, name=symbol)
         cerebro.adddata(data)
-        print(f'Added {symbol} data to cerebro instance\n')
-        print(f"{alpaca_data.head(3)}\n")
+        print(f'Added {symbol} data to cerebro instance')
+        print(f"{alpaca_data.head(1)}\n")
     
     cerebro.broker.setcommission(commission=comm)
     initial_portfolio_value = cerebro.broker.getvalue()

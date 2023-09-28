@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from src import backtesting, strategies, config
 from alpaca.data.timeframe import TimeFrame
 import numpy as np
@@ -81,24 +82,18 @@ async def test():
             'VOO': 0.33,
             'VOOG': 0.1,
             'IBM': 0.05,
-            # 'BTC-USD': 0.2,
-            # 'ETH-USD': 0.1,
             'BTC-USD': 0.33,
             'ETH-USD': 0.17,
         },
     }
 
-    user_start = "2010-10-01"
-    user_end = "2022-09-01"
-    # contents = config.return_portfolio_stats()
-    # await config.send_message(config.chat_id, f"REBALANCING:\n\n{contents}")
-    # exit()
+    user_start = "2017-11-09"
+    user_end = datetime.datetime.now().strftime("%Y-%m-%d")
 
     backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0)
-    exit()
-    # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 100000)
-
+    # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000)
     # backtesting.backtest(strategies.ETHScalping, params, ['ETHUSD'], user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
+    exit()
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(test())
