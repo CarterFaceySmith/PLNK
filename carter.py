@@ -7,9 +7,9 @@ portfolio = {'VOO': 0.33, 'VOOG': 0.1, 'IBM': 0.05, 'BTCUSD': 0.33, 'ETHUSD': 0.
 
 
 async def main():
-    # input("Press Enter to confirm live rebalance...")
+    await config.send_message('Attempting automated rebalance via daemon.')
     await rebalance.perform_live_rebalance(trading_client=config.live_client, desired_allocations=portfolio)
-    # await config.send_message("Test message - scheduled job performed by daemon.")
+    await config.send_message("Scheduled rebalance performed by daemon.")
     exit()
 
 if __name__ == '__main__':

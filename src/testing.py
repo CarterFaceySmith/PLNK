@@ -84,6 +84,8 @@ async def test():
             'IBM': 0.05,
             'BTC-USD': 0.33,
             'ETH-USD': 0.17,
+            # 'SPY': 0.5,
+            # 'QQQ': 0.5,
         },
     }
 
