@@ -3,7 +3,7 @@ from src import config, rebalance, backtesting, testing
 from alpaca.trading.client import TradingClient
 
 # portfolio = {'VOO': 0.4, 'VOOG': 0.1, 'IBM': 0.05, 'BTCUSD': 0.2, 'ETHUSD': 0.2}
-portfolio = {'VOO': 0.33, 'VOOG': 0.1, 'IBM': 0.05, 'BTCUSD': 0.33, 'ETHUSD': 0.17,}
+portfolio = {'VOO': 0.35, 'VOOG': 0.1, 'IBM': 0.05, 'BTCUSD': 0.33, 'ETHUSD': 0.17,}
 
 
 async def main():
