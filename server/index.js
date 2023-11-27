@@ -40,10 +40,10 @@ mongoose
     app.listen(PORT, () => console.log(`Server Connected - Port: ${PORT}`));
 
     /* ADD DATA ONE TIME ONLY OR AS NEEDED */
-    // await mongoose.connection.db.dropDatabase();
+   // await mongoose.connection.db.dropDatabase();
     // KPI.insertMany(kpis);
-    // Product.insertMany(products);
-    // Transaction.insertMany(transactions);
-    // console.log("Data added");
+     //Product.insertMany(products);
+     //Transaction.insertMany(transactions);
+     //console.log("Data added", kpis, products, transactions);
   })
   .catch((error) => console.log(`${error} did not connect`));
