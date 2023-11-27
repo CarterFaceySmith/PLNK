@@ -14,7 +14,7 @@ import Transaction from "./models/Transaction.js";
 import { kpis, products, transactions } from "./data/data.js";
 
 /* CONFIGURATIONS */
-dotenv.config();
+dotenv.config({path: './.env'});
 const app = express();
 app.use(express.json());
 app.use(helmet());
@@ -30,12 +30,9 @@ app.use("/product", productRoutes);
 app.use("/transaction", transactionRoutes);
 
 /* MONGOOSE SETUP */
-const PORT = process.env.PORT || 9000;
+const PORT = process.env.PORT;
 mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(async () => {
     app.listen(PORT, () => console.log(`Server Connected - Port: ${PORT}`));
 
@@ -43,7 +40,7 @@ mongoose
    // await mongoose.connection.db.dropDatabase();
     // KPI.insertMany(kpis);
      //Product.insertMany(products);
-     Transaction.insertMany(transactions);
-    console.log("Data added", kpis, products, transactions);
+    //  Transaction.insertMany(transactions);
+    // console.log("Data added", kpis, products, transactions);
   })
   .catch((error) => console.log(`${error} did not connect`));

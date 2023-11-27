@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for cfsplnkserver on 2023-11-27T19:45:27+01:00
+# fly.toml app configuration file generated for cfsplnkserver-rough-moon-7550 on 2023-11-27T21:57:32+01:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "cfsplnkserver"
+app = "cfsplnkserver-rough-moon-7550"
 primary_region = "ams"
 
 [build]
