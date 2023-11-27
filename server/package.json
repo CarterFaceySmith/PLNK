@@ -19,10 +19,10 @@
     "helmet": "^6.2.0",
     "mongodb": "^6.3.0",
     "mongoose": "^7.6.5",
-    "mongoose-currency": "^0.2.0",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.11",
     "nodemon": "^2.0.22"
   }
 }
