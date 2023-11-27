@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.11",
+    "mongoose-currency": "^0.2.0",
     "nodemon": "^2.0.22"
   }
 }
