@@ -80,7 +80,7 @@ async def test():
             # 'VGS.AX': 0.3,
             # 'VGB.AX': 0.1,
             'VOO': 0.33,
-            'VOOG': 0.1,
+            'VOOG': 0.12,
             'IBM': 0.05,
             'BTC-USD': 0.33,
             'ETH-USD': 0.17,
@@ -92,7 +92,7 @@ async def test():
     user_start = "2017-11-09"
     user_end = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000, 0.0)
+    backtesting.backtest(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 27000, 0.0)
     # backtesting.optimise(strategies.Rebalance, strat_params, list(strat_params['weights'].keys()), user_start, user_end, TimeFrame.Day, 50000)
     # backtesting.backtest(strategies.ETHScalping, params, ['ETHUSD'], user_start, user_end, TimeFrame.Day, 100000, 0.0, False)
     exit()
