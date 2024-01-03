@@ -39,6 +39,7 @@ def return_clients():
 
 async def send_message(message):
     await bot.send_message(chat_id=tg_chat_id, text=message)
+    print(f'Message log: {message}')
 
 def get_historic_data(symbol, rest_api, timeframe, start, end):
     if(symbol in crypto):
