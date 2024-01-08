@@ -155,7 +155,7 @@ const Row3 = () => {
           />
         </Box>
       </DashboardBox>
-      <DashboardBox gridArea="i">
+      {/* <DashboardBox gridArea="i">
         <BoxHeader title="Expense Breakdown By Category" sideText="+4%" />
         <FlexBetween mt="0.5rem" gap="0.5rem" p="0 1rem" textAlign="center">
           {pieChartData?.map((data, i) => (
@@ -203,7 +203,7 @@ const Row3 = () => {
           molestie volutpat et. Malesuada quis pretium aliquet lacinia ornare
           sed. In volutpat nullam at est id cum pulvinar nunc.
         </Typography>
-      </DashboardBox>
+      </DashboardBox> */}
     </>
   );
 };
