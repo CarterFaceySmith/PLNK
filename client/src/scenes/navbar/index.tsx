@@ -10,11 +10,11 @@ const Navbar = (props: Props) => {
   const { palette } = useTheme();
   const [selected, setSelected] = useState("dashboard");
   return (
-    <FlexBetween mb="0.25rem" p="0.5rem 0rem" color={palette.grey[300]}>
+    <FlexBetween mb="0.25rem" p="0.5rem 0rem" color={palette.grey[600]}>
       {/* LEFT SIDE */}
       <FlexBetween gap="0.75rem">
         <ScienceIcon sx={{ fontSize: "28px" }} />
-        <Typography variant="h4" fontSize="16px">
+        <Typography variant="h4" fontSize="16px" color={palette.grey[600]}>
           PLNK
         </Typography>
       </FlexBetween>
@@ -24,6 +24,18 @@ const Navbar = (props: Props) => {
         <Box sx={{ "&:hover": { color: palette.primary[100] } }}>
           <Link
             to="/"
+            onClick={() => setSelected("homepage")}
+            style={{
+              color: selected === "homepage" ? "inherit" : palette.grey[700],
+              textDecoration: "inherit",
+            }}
+          >
+            home
+          </Link>
+        </Box>
+        <Box sx={{ "&:hover": { color: palette.primary[100] } }}>
+          <Link
+            to="/dashboard"
             onClick={() => setSelected("dashboard")}
             style={{
               color: selected === "dashboard" ? "inherit" : palette.grey[700],
