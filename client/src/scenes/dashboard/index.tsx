@@ -7,7 +7,7 @@ const gridTemplateLargeScreens = `
   "a b c"
   "a b c"
   "a b c"
-  "a b f"
+  "a b i"
   "g h i"
   "g h j"
   "g h j"
