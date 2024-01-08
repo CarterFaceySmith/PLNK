@@ -1,9 +1,6 @@
-import React, { useState } from "react";
-import { Box, Button, Typography, useTheme } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 const Homepage: React.FC = () => {
-  const { palette } = useTheme();
-  const [isPredictions, setIsPredictions] = useState(false);
 
   return (
     <Box
@@ -18,6 +15,9 @@ const Homepage: React.FC = () => {
     </Typography>
     <Typography variant="h2" gutterBottom>
         Quantitative microfund.
+    </Typography>
+    <Typography variant="h3" gutterBottom padding={3}>
+        Averaged return p.a: 32%
     </Typography>
     </Box>
   );
