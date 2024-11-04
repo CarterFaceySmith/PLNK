@@ -23,6 +23,13 @@ To get started with the portfolio backtest tool:
 pip install -r requirements.txt
 ```
 
+Using a venv:
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 ### Configuration
 
 Create a `config.py` file with your portfolio settings:
