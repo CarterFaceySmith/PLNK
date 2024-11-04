@@ -1,0 +1,79 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Analysis</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Portfolio Analysis Dashboard</h1>
+        
+        <!-- Performance Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div id="performance-chart"></div>
+        </div>
+        
+        <!-- Drawdown Analysis -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div id="drawdown-chart"></div>
+        </div>
+        
+        <!-- Risk Metrics -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div id="risk-metrics-chart"></div>
+        </div>
+        
+        <!-- Correlation Matrix -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div id="correlation-chart"></div>
+        </div>
+        
+        <!-- Metrics Table -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Performance Metrics</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Metric
+                            </th>
+                            {% for strategy in metrics.keys() %}
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ strategy }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for metric in metrics[metrics.keys()|list|first].keys() %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ metric }}
+                            </td>
+                            {% for strategy in metrics.keys() %}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                {{ metrics[strategy][metric] }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts
+        Plotly.newPlot('performance-chart', {{ charts.performance | safe }});
+        Plotly.newPlot('drawdown-chart', {{ charts.drawdown | safe }});
+        Plotly.newPlot('risk-metrics-chart', {{ charts.risk_metrics | safe }});
+        Plotly.newPlot('correlation-chart', {{ charts.correlation | safe }});
+    </script>
+</body>
+</html>
