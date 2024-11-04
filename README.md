@@ -90,6 +90,13 @@ Run the analysis:
 python main.py
 ```
 
+Alternatively you can run the basic flask app to visualise the charts in your browser:
+```python
+python app.py
+```
+
+Then navigate to `localhost:5000`.
+
 The tool will output:
 - Asset-specific performance metrics
 - Portfolio rebalancing analysis
