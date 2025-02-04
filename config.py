@@ -107,7 +107,7 @@ class BacktestConfig:
                 'level': 'INFO',
                 'formatter': 'standard',
                 'class': 'logging.FileHandler',
-                'filename': 'backtest.log',
+                'filename': 'logs/backtest.log',
                 'mode': 'a',
             },
         },

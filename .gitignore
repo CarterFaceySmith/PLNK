@@ -1,0 +1,6 @@
+logs/
+venv
+*.cfg
+__pycache__
+bots/
+*.json
