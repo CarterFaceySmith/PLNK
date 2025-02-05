@@ -22,11 +22,11 @@ class PortfolioRebalancer:
             'VOOG': {'target': 15, 'units': 0, 'price': 0},
             'VAS.AX': {'target': 15, 'units': 0, 'price': 0},
             'ITA': {'target': 10, 'units': 0, 'price': 0},
-            'NLR': {'target': 5, 'units': 0, 'price': 0},
-            'DTCR': {'target': 5, 'units': 0, 'price': 0},
+            'NLR': {'target': 0, 'units': 0, 'price': 0},
+            'DTCR': {'target': 0, 'units': 0, 'price': 0},
             # Crypto (25%)
-            'BTC': {'target': 15, 'units': 0, 'price': 0},
-            'SOL': {'target': 10, 'units': 0, 'price': 0},
+            'BTC': {'target': 20, 'units': 0, 'price': 0},
+            'SOL': {'target': 15, 'units': 0, 'price': 0},
             # Special rows (not counted in allocation)
             'DEPOSIT': {'target': 0, 'units': 0, 'price': 1},
             'WITHDRAW': {'target': 0, 'units': 0, 'price': 1}
